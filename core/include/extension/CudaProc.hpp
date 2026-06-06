@@ -1,8 +1,8 @@
 #ifndef __CudaProc_hpp__
 #define __CudaProc_hpp__
 
+#include <cmath>
 #include <string>
-
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -177,6 +177,24 @@ static inline void* cudaHostGetGpuPointer(const void *src_ptr, const string &fil
 static inline bool cudaExecDevice(const int device, const string &file_name, const string &method_name)
 {
     return cudaErrorChecker(cudaSetDevice(device), file_name, method_name);
+}
+
+
+// Allocate cuda executed grid size.
+// Reference: https://github.com/pjreddie/darknet/blob/master/src/cuda.c#L51
+static inline dim3 cudaExecGrid(const size_t all_threads_num, const size_t per_block_threads_num)
+{
+    size_t k = (all_threads_num - 1) / per_block_threads_num + 1;
+    size_t x = k;
+    size_t y = 1;
+    
+    if (x > 65535)
+    {
+        x = static_cast<size_t>(ceil(sqrt(k)));
+        y = static_cast<size_t>((all_threads_num - 1) / (x * per_block_threads_num) + 1);
+    }
+
+    return dim3(x, y, 1);
 }
 
 

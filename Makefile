@@ -6,6 +6,7 @@ include make/binaries.configure.mk
 
 
 BUILD_FLAGS := $(sort $(BUILD_FLAGS))
+CC_DEPENDENCY := $(sort $(CC_DEPENDENCY))
 KERNELS := $(addprefix $(DIR_KERNEL_OBJS), $(KERNEL_OBJS))
 EXEAMPLE_OBJS := $(addprefix $(DIR_EXE_OBJS), $(EXEAMPLE_OBJS))
 EXEAMPLES := $(addprefix $(DIR_EXES), $(patsubst %.o,%,$(notdir $(EXEAMPLE_OBJS))))
@@ -27,7 +28,6 @@ clean:
 $(CC_STATIC): $(KERNELS)
 	$(AR) $@ $^
 
-ifdef BUILD_FLAGS
 
 $(CC_SHARED): $(KERNELS) 
 	$(CC) -shared $(KERNELS) $(CC_DEPENDENCY) -o $(CC_SHARED)
@@ -41,18 +41,5 @@ $(DIR_EXE_OBJS)%.o: core/example/%.cpp
 $(DIR_KERNEL_OBJS)%.o: %.cpp
 	$(CC) $(CC_DEPENDENCY) -c $< -o $@
 
-else
-
-$(CC_SHARED): $(KERNELS) 
-	$(CC) -shared $(KERNELS) -o $(CC_SHARED)
-
-$(DIR_EXES)%: $(DIR_EXE_OBJS)%.o $(CC_STATIC)
-	$(CC) $^ -o $@ 
-
-$(DIR_EXE_OBJS)%.o: core/example/%.cpp
-	$(CC) -c $< -o $@
-
-$(DIR_KERNEL_OBJS)%.o: %.cpp
-	$(CC) -c $< -o $@
-	
-endif
+$(DIR_KERNEL_OBJS)%.o: %.cu
+	$(NVCC) $(CUDA_DEPENDENCY) -c $< -o $@

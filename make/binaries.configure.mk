@@ -3,6 +3,9 @@ VPATH=core/src/logging:core/src/array:core/src/base:core/src/tensor
 
 # kernel.
 KERNEL_OBJS=Logging.o ArrayStype.o ScalarType.o DataArch.o TensorBase.o Tensor.o
+ifeq ($(WITH_CUDA), 1)
+KERNEL_OBJS+=GpuDataProc.o
+endif
 
 # example.
 EXEAMPLE_OBJS=array_example.o scalar_example.o tensor_example.o

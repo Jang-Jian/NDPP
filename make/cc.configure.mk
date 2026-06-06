@@ -1,12 +1,14 @@
 include make/make.configure.mk
 
 
-CFLAGS=-std=c++11 -fPIC -O3 -funroll-loops -march=native -fopenmp -Wall
+CCSTD=-std=c++11
+CCFLAGS= -fPIC -O3 -funroll-loops -march=native -Wall
+CC_DEPENDENCY+=-fopenmp
 
 ifdef BUILD_FLAGS
-CC=g++ $(BUILD_FLAGS) $(INCLUDE) $(CFLAGS)
+CC=g++ $(BUILD_FLAGS) $(INCLUDE) $(CCSTD) $(CCFLAGS)
 else
-CC=g++ $(INCLUDE) $(CFLAGS)
+CC=g++ $(INCLUDE) $(CCSTD) $(CCFLAGS)
 endif
 
 ARFLAGS=rcs

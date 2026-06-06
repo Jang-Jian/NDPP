@@ -4,13 +4,16 @@
 
 #include <include/base/ScalarType.hpp>
 #include <include/base/Parallelism.hpp>
-
+#ifdef CUDA
+#include <include/base/GpuDataProc.cuh>
+#endif
 
 namespace ndpp
 {
 
 namespace ndpp_memory
 {
+    // Specifying the value at specific memory address.
     static inline void memset(void *dst, const void *value, 
                               const ScalarType dst_stype, const ScalarType value_stype,
                               const DeviceType dst_dtype, const size_t size, 
@@ -21,6 +24,7 @@ namespace ndpp_memory
 namespace ndpp_memory
 {
 
+// cpuMemsetImpleKernel(OpenMP): Specifying the value at specific memory address.
 template<typename T>
 static inline void cpuMemsetImpleKernel(T *src, const void *value, const ScalarType value_stype, const size_t size)
 {
@@ -79,7 +83,6 @@ static inline void cpuMemsetImpleKernel(T *src, const void *value, const ScalarT
 }
 
 
-// TO DO ... ADD function 'gpuMemsetImpleKernel' here .
 static inline void memset(void *dst, const void *value, 
                           const ScalarType dst_stype, const ScalarType value_stype,
                           const DeviceType dst_dtype, const size_t size, 
@@ -159,7 +162,9 @@ static inline void memset(void *dst, const void *value,
 
     #ifdef CUDA
         case DeviceType::CudaDevice:
-
+            {
+                ndpp_cuda::gpuMemsetImpleKernel(dst, value, dst_stype, value_stype, size);
+            }
             break;
     #endif
     }

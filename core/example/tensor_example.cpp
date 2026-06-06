@@ -19,7 +19,7 @@ int main()
 //    {
 #ifdef CUDA
     ndpp::ndpp_memory::ndpp_cuda::cudaExecDevice(device_t, "tensor_example.cpp", "main()");
-    auto dtype = ndpp_memory::DeviceType::CudaZeroCpy;
+    auto dtype = ndpp_memory::DeviceType::CudaDevice;
 #else
     auto dtype = ndpp_memory::DeviceType::Host;
 #endif
@@ -87,7 +87,7 @@ int main()
     cout << endl;
 #endif
 
-    float *tensor_ptr = (ndpp_memory::ScalarTypeToCppType<scalar_t>::type*)tensor_test.data();
+    //float *tensor_ptr = (ndpp_memory::ScalarTypeToCppType<scalar_t>::type*)tensor_test.data();
 
     cout << "tensor_test:" << endl;
     for (int i = 0; i < 3; ++i)
@@ -106,7 +106,7 @@ int main()
     cout << endl;
 
     
-    double start_time_2 = omp_get_wtime();
+    /*double start_time_2 = omp_get_wtime();
     for (int i = 0; i < 3; ++i)
     {
         for (int j = 0; j < 4; ++j)
@@ -120,13 +120,13 @@ int main()
         }
     }
     double end_time_2 = omp_get_wtime();
-    cout << endl;
+    cout << endl;*/
 
     double elapsed_time_1 = end_time_1 - start_time_1;
-    double elapsed_time_2 = end_time_2 - start_time_2;
+    //double elapsed_time_2 = end_time_2 - start_time_2;
 
      cout << "elapsed_time_1: " << elapsed_time_1 << endl;
-     cout << "elapsed_time_2: " << elapsed_time_2 << endl;
+     //cout << "elapsed_time_2: " << elapsed_time_2 << endl;
 //}
 
 
