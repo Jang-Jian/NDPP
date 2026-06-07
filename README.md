@@ -2,9 +2,9 @@
 
 NUMERICAL DATA PIPELINE & PROCESSING.
 
-## ENVIRONMENT.
+## Environment.
 
-* Linux (such as Ubuntu).
+* Linux.
 * gcc & g++.
 * nvcc.
 
@@ -29,7 +29,9 @@ If you wanna build the code for RTX-30 series cards use, you could type
 make -j2 WITH_CUDA=1 WITH_HALF=1 WITH_CUDA_SM=80,86,87 WITH_CUDA_ARCH=80
 ```
 
-## Container.
+## Function.
 
-* ndpp::Array<T>
-* ndpp::Tensor
+### Container.
+
+* ndpp::Array<T>: [Sample code for C++](core/example/array_example.cpp).
+* ndpp::Tensor: [Sample code for C++](core/example/tensor_example.cpp).

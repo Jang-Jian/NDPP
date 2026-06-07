@@ -28,6 +28,7 @@ int main()
 
     cout << "tensor_test ptr: " << tensor_test.data() << endl;
     cout << "tensor_test dim: " << tensor_test.dim() << endl;
+    cout << "tensor_test stype: " << int(tensor_test.scalar()) << endl;
 
     SizeTArray shape = tensor_test.sizes();
     SizeTArray strides = tensor_test.strides();

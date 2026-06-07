@@ -199,6 +199,26 @@ static inline void* scalarPtrShift(const void *src, const ScalarType stype, cons
 }
 
 
+#ifdef CUDA
+
+// Used for DeviceType::CudaDevice pointer access.
+struct ScalarPtrCuDevAccessor
+{
+    template <typename T>
+    T operator()(const T *src, const ScalarType stype, const int64_t pos,
+                  const string &file_name, const string &method_name) const 
+    {
+        T _data = static_cast<T>(0);
+        mixMemoryCopy((T*)scalarPtrShift(src, stype, pos), 
+                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, 
+                      file_name, method_name);
+        return _data;
+    }
+};
+
+#endif
+
+
 template<typename T>
 static inline T scalarPtrAccess(const void *src, const ScalarType stype, const DeviceType dtype, const int64_t pos,
                                 const string &file_name, const string &method_name)
@@ -266,108 +286,51 @@ static inline T scalarPtrAccess(const void *src, const ScalarType stype, const D
             break;
     #ifdef CUDA
         case DeviceType::CudaDevice:
-            switch (stype)
             {
-                case ScalarType::UInt8:
-                    {
-                        ScalarTypeToCppType<ScalarType::UInt8>::type _data = 0;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::UInt8>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
-                case ScalarType::UInt16:
-                    {
-                        ScalarTypeToCppType<ScalarType::UInt16>::type _data = 0;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::UInt16>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
-                case ScalarType::UInt32:
-                    {
-                        ScalarTypeToCppType<ScalarType::UInt32>::type _data = 0;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::UInt32>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
-                case ScalarType::UInt64:
-                    {
-                        ScalarTypeToCppType<ScalarType::UInt64>::type _data = 0;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::UInt64>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
-                case ScalarType::Int8:
-                    {
-                        ScalarTypeToCppType<ScalarType::Int8>::type _data = 0;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::Int8>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
-                case ScalarType::Int16:
-                    {
-                        ScalarTypeToCppType<ScalarType::Int16>::type _data = 0;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::Int16>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
-                case ScalarType::Int32:
-                    {
-                        ScalarTypeToCppType<ScalarType::Int32>::type _data = 0;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::Int32>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
-                case ScalarType::Int64:
-                    {
-                        ScalarTypeToCppType<ScalarType::Int64>::type _data = 0;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::Int64>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
+                ScalarPtrCuDevAccessor accessor;
+                switch (stype)
+                {
+                    case ScalarType::UInt8:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::UInt8>::type*)src, stype, pos,file_name, method_name));
+                        break;
+                    case ScalarType::UInt16:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::UInt16>::type*)src, stype, pos,file_name, method_name));
+                        break;
+                    case ScalarType::UInt32:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::UInt32>::type*)src, stype, pos,file_name, method_name));
+                        break;
+                    case ScalarType::UInt64:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::UInt64>::type*)src, stype, pos,file_name, method_name));
+                        break;
+                    case ScalarType::Int8:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Int8>::type*)src, stype, pos,file_name, method_name));
+                        break;
+                    case ScalarType::Int16:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Int16>::type*)src, stype, pos,file_name, method_name));
+                        break;
+                    case ScalarType::Int32:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Int32>::type*)src, stype, pos,file_name, method_name));
+                        break;
+                    case ScalarType::Int64:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Int64>::type*)src, stype, pos,file_name, method_name));
+                        break;
 
-            #ifdef HALF
-                case ScalarType::Float16:
-                    {
-                        ScalarTypeToCppType<ScalarType::Float16>::type _data = 0;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::Float16>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
-            #endif
-                    
-                case ScalarType::Float32:
-                    {
-                        ScalarTypeToCppType<ScalarType::Float32>::type _data = 0.0f;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::Float32>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
-                case ScalarType::Float64:
-                    {
-                        ScalarTypeToCppType<ScalarType::Float64>::type _data = 0.0;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::Float64>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
-                case ScalarType::Bool:
-                    {
-                        ScalarTypeToCppType<ScalarType::Bool>::type _data = false;
-                        mixMemoryCopy((ScalarTypeToCppType<ScalarType::Bool>::type*)scalarPtrShift(src, stype, pos), 
-                                      DeviceType::CudaDevice, &_data, DeviceType::Host, 1, file_name, method_name);
-                        data = static_cast<T>(_data);
-                    }
-                    break;
+                #ifdef HALF
+                    case ScalarType::Float16:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Float16>::type*)src, stype, pos,file_name, method_name));
+                        break;
+                #endif
+                        
+                    case ScalarType::Float32:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Float32>::type*)src, stype, pos,file_name, method_name));
+                        break;
+                    case ScalarType::Float64:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Float64>::type*)src, stype, pos,file_name, method_name));
+                        break;
+                    case ScalarType::Bool:
+                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Bool>::type*)src, stype, pos,file_name, method_name));
+                        break;
+                }
             }
             break;
     #endif
