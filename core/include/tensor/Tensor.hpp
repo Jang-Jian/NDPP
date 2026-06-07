@@ -75,24 +75,30 @@ public:
     // Direct access to the underlying contiguous storage.
     inline void* data() const;
 
+    // Get the dimension.
     inline size_t dim() const;
 
     // Get the element size on acutal use.
-    // P.S elements() isn't absoulately same as allocations().
+    // P.S elements() isn't necessarily same as allocations().
     inline size_t elements() const;
 
     // Get the actual size on memory allocation.
-    // P.S allocations() isn't absoulately same as elements().
+    // P.S allocations() isn't necessarily same as elements().
     inline size_t allocations() const;
     
+    // Get the shape.
     inline SizeTArray sizes() const; 
 
+    // Get the strides.
     inline SizeTArray strides() const; 
 
+    // Get the ndpp_memory::ScalarType (data type).
     inline ndpp_memory::ScalarType scalar() const;
 
+    // Get the ndpp_memory::DeviceType (memory type).
     inline ndpp_memory::DeviceType device() const;
 
+    // Get the ndpp_memory::DeviceStatus (allocation status).
     inline ndpp_memory::DeviceStatus status() const; 
 
     // Copy other Tensor to itself via ndpp_memory::DeviceType.
@@ -122,18 +128,24 @@ public:
     inline void migrate(void **data, SizeTArray &shape, SizeTArray &strides,
                         ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, 
                         ndpp_memory::DeviceStatus &dstatus);                    
-
+    
+    // Allocate the memory with shape, strides, different ndpp_memory::ScalarType & different ndpp_memory::DeviceType.
     inline void zerosV(const SizeTArray &shape, const SizeTArray &strides,
                        const ndpp_memory::ScalarType stype, 
                        const ndpp_memory::DeviceType dtype);
-  
+    
+    // Allocate the memory with shape, different ndpp_memory::ScalarType & different ndpp_memory::DeviceType.
+    // P.S The stride will be calculated via shape, and the allocation will be moved to zerosV().
     inline void zerosB(const SizeTArray &shape, const ndpp_memory::ScalarType stype, 
                        const ndpp_memory::DeviceType dtype);
 
+    // Deallocate the memory.
     inline void destory();
 
 
 private:
+    // Convert single element to specific scalar type.
+    // P.S It must be 0-dim and has single element inside.
     template<typename T>
     inline T toItem(const string &operator_name) const;
 };
@@ -449,7 +461,7 @@ void Tensor::destory()
 template<typename T>
 inline T Tensor::toItem(const string &operator_name) const
 {
-    if (dim() > 1)
+    if (dim() > 0)
     {
         ndpp_log::logger("Tensor.hpp", "Tensor::toItem()", ndpp_log::RuntimeType::ERROR, 
                          "Only one element tensors can be converted to Python scalars or C++ arithmetic types.", true);
