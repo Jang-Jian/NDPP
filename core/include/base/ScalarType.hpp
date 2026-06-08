@@ -22,7 +22,9 @@ namespace ndpp_memory
 {
 
 // ScalarType: Scalar(data) type.
-// reference: https://github.com/pytorch/pytorch/blob/3d96925b9b42a329b07cd302e08c3990c15a34a6/torch/headeronly/core/ScalarType.h#L1
+// reference: 
+// - https://github.com/pytorch/pytorch/blob/main/torch/csrc/api/include/torch/types.h
+// - https://github.com/pytorch/pytorch/blob/3d96925b9b42a329b07cd302e08c3990c15a34a6/torch/headeronly/core/ScalarType.h#L1
 enum class ScalarType;
 
 // Convert ndpp_memory::ScalarType to C++'s data type.

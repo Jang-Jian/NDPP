@@ -7,8 +7,12 @@ using namespace std;
 using namespace ndpp;
 
 #ifdef CUDA
-#define device_t 1
+#define device_id_t 1
+#define device ndpp_memory::DeviceType::CudaDevice
+#else
+#define device ndpp_memory::DeviceType::Host
 #endif
+
 #define scalar_t ndpp_memory::ScalarType::Float32
 
 
@@ -18,13 +22,9 @@ int main()
 //while (1)
 //    {
 #ifdef CUDA
-    ndpp::ndpp_memory::ndpp_cuda::cudaExecDevice(device_t, "tensor_example.cpp", "main()");
-    auto dtype = ndpp_memory::DeviceType::CudaDevice;
-#else
-    auto dtype = ndpp_memory::DeviceType::Host;
+    ndpp::ndpp_memory::ndpp_cuda::cudaExecDevice(device_id_t, "tensor_example.cpp", "main()");
 #endif
-    Tensor tensor_test;
-    tensor_test.zerosB({3, 4, 5}, scalar_t, dtype);
+    Tensor tensor_test = ndpp::zeros({3, 4, 5}, scalar_t, device);
 
     cout << "tensor_test ptr: " << tensor_test.data() << endl;
     cout << "tensor_test dim: " << tensor_test.dim() << endl;
