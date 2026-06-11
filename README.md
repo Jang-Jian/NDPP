@@ -35,3 +35,7 @@ make -j2 WITH_CUDA=1 WITH_HALF=1 WITH_CUDA_SM=80,86,87 WITH_CUDA_ARCH=80
 
 * ndpp::Array<T>: [Sample code for C++](core/example/array_example.cpp).
 * ndpp::Tensor: [Sample code for C++](core/example/tensor_example.cpp).
+
+### Algorithm.
+
+* ndpp::sort: [Sample code for C++](core/example/sort_example.cpp).

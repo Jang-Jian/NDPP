@@ -51,9 +51,6 @@ public:
     // Returns an iterator to the end (begin() + size).
     inline T* end() const;
 
-    // Clone itself to new Array<T> via ndpp_memory::DeviceType.
-    inline Array<T> clone(const ndpp_memory::DeviceType dtype);
-
     // Get the ndpp_memory::DeviceType.
     inline ndpp_memory::DeviceType device() const; 
 
@@ -62,6 +59,9 @@ public:
 
     // Copy other Array<T> to itself via ndpp_memory::DeviceType.
     inline void copy(const Array<T> &src, const ndpp_memory::DeviceType dtype);
+
+    // Clone itself to new Array<T> via ndpp_memory::DeviceType.
+    inline Array<T> clone(const ndpp_memory::DeviceType dtype) const;
 
     // Reference the data from other via pointer.
     inline void refer(T *data, const size_t size, const ndpp_memory::DeviceType dtype);
@@ -183,15 +183,6 @@ inline T* Array<T>::end() const
 }
 
 template<class T>
-inline Array<T> Array<T>::clone(const ndpp_memory::DeviceType dtype)
-{
-    Array<T> _dst(size(), dtype);
-    ndpp_array_base::ArrayDevice<T>::DeviceCopyTo(_dst.data(), dtype,
-                                                  "Array.hpp", "Array<T>::clone()");
-    return _dst;
-}
-
-template<class T>
 inline ndpp_memory::DeviceType Array<T>::device() const
 {
     return ndpp_array_base::ArrayDevice<T>::DeviceTy();
@@ -208,6 +199,14 @@ inline void Array<T>::copy(const Array<T> &src, const ndpp_memory::DeviceType dt
 {
     ndpp_array_base::ArrayDevice<T>::DeviceCopy(src.data(), src.device(), dtype, src.size(), 
                                                 "Array.hpp", "Array<T>::copy()");
+}
+
+template<class T>
+inline Array<T> Array<T>::clone(const ndpp_memory::DeviceType dtype) const
+{
+    Array<T> _dst(size(), dtype);
+    _dst.copy(*this, dtype);
+    return _dst;
 }
 
 template<class T>

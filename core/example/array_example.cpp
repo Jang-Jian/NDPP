@@ -1,7 +1,7 @@
 #include <omp.h>
 #include <iostream>
 
-#include <include/ndpp.hpp>
+#include <include/ndpp/ndpp.hpp>
 
 using namespace std;
 using namespace ndpp;
@@ -19,9 +19,9 @@ int main()
 while (1)
 {
     // example: 1d-array.
-    Array<scalar_t> array_1d(10000, ndpp_memory::DeviceType::Host);
+    Array<scalar_t> array_1d(10000, ndpp::Host);
     //Array<SAMPLE_TYPE> array_1d;
-    //array_1d.allocate(5, ndpp_memory::DeviceType::Host);
+    //array_1d.allocate(5, ndpp::Host);
 
     cout << "array_1d:" << endl;
     cout << "array_1d.size(): " << array_1d.size() << endl;
@@ -59,9 +59,9 @@ while (1)
 
 #ifdef CUDA
     ndpp::ndpp_memory::ndpp_cuda::cudaExecDevice(device_t, "array_example.cpp", "main()");
-    auto cpy_dtype = ndpp_memory::DeviceType::CudaDevice;
+    auto cpy_dtype = ndpp::CudaDevice;
 #else
-    auto cpy_dtype = ndpp_memory::DeviceType::Host;
+    auto cpy_dtype = ndpp::Host;
 #endif
     Array<scalar_t> array_1d_clone = array_1d.clone(cpy_dtype);
     cout << "array_1d_clone:" << endl;
@@ -120,10 +120,10 @@ while (1)
     
 
     // example: 2d-array.
-    Array<Array<scalar_t>> array_2d(2, ndpp_memory::DeviceType::Host);
+    Array<Array<scalar_t>> array_2d(2, ndpp::Host);
     for (int index = 0; index < static_cast<int>(array_2d.size()); ++index)
     {
-        array_2d[index].allocate(3, ndpp_memory::DeviceType::Host);
+        array_2d[index].allocate(3, ndpp::Host);
     }
 
     // example: data assignment in 2d-array.

@@ -1,19 +1,19 @@
 #include <omp.h>
 #include <iostream>
 
-#include <include/ndpp.hpp>
+#include <include/ndpp/ndpp.hpp>
 
 using namespace std;
 using namespace ndpp;
 
 #ifdef CUDA
 #define device_id_t 1
-#define device ndpp_memory::DeviceType::CudaDevice
+#define device ndpp::CudaDevice
 #else
-#define device ndpp_memory::DeviceType::Host
+#define device ndpp::Host
 #endif
 
-#define scalar_t ndpp_memory::ScalarType::Float32
+#define scalar_t ndpp::UInt8
 
 
 int main()

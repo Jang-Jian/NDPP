@@ -104,6 +104,9 @@ public:
     // Copy other Tensor to itself via ndpp_memory::DeviceType.
     inline void copy(const Tensor &src, const ndpp_memory::DeviceType dtype);
 
+    // Clone itself to new Tensor via ndpp_memory::DeviceType.
+    inline Tensor clone(const ndpp_memory::DeviceType dtype) const;
+
     // Slicing the input tensor along the selected dimension at the given index.
     // Reference:
     //  - https://docs.pytorch.org/docs/stable/generated/torch.select.html#torch.select
@@ -376,6 +379,13 @@ inline void Tensor::copy(const Tensor &src, const ndpp_memory::DeviceType dtype)
 {
     DeviceCopy(src.data(), src.scalar(), src.device(), dtype, 
                src.sizes(), src.strides(), "Tensor.hpp", "Tensor::copy()");
+}
+
+inline Tensor Tensor::clone(const ndpp_memory::DeviceType dtype) const
+{
+    Tensor _dst;
+    _dst.copy(*this, dtype);
+    return _dst;
 }
 
 inline void Tensor::refer(void *data, const SizeTArray &shape, const SizeTArray &strides, 
