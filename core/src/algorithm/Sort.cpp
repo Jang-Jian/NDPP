@@ -8,10 +8,10 @@ namespace ndpp
 {
 
 
-
+// qsortPivot: Comparing with pivot, and selecting the new pivot (used for Quick sort).
 template<typename T>
-static inline int64_t qsortPivot(T *dst, const int64_t index_strides, 
-                                const int64_t start_index, const int64_t end_index, const bool descending)
+static inline int64_t qsortPivot(T *dst, const int64_t index_strides, const int64_t start_index, 
+                                 const int64_t end_index, const bool descending)
 {
     T pivot_data = dst[end_index * index_strides];
     int64_t move_index = start_index;
@@ -42,6 +42,8 @@ static inline int64_t qsortPivot(T *dst, const int64_t index_strides,
     return move_index;
 }
 
+
+// qsort: Quick sort.
 template<typename T>
 static void qsort(T *dst, const int64_t index_strides, const int64_t start_index, const int64_t end_index, const bool descending)
 {
@@ -55,11 +57,100 @@ static void qsort(T *dst, const int64_t index_strides, const int64_t start_index
 }
 
 
-// Conducting the sort algorithm.
+// merge: Comparing left & right segment (used for merge sort).
+template<typename T>
+static inline void merge(T *dst, const int64_t index_strides, const int64_t start_index, const int64_t medium_index, 
+                         const int64_t end_index, const bool descending)
+{
+    Array<T> left_part(medium_index - start_index + 1, ndpp_memory::DeviceType::Host);
+    Array<T> right_part(end_index - medium_index, ndpp_memory::DeviceType::Host);
+
+
+    const auto dist = [&](Array<T> &part, const int64_t &t1, const int64_t &t2)
+    {
+        for (int64_t idx = t1; idx <= t2; ++idx)
+        {
+            part[(idx - t1) * index_strides] = dst[idx * index_strides];
+        }
+    };
+
+    const auto concat = [&](const Array<T> &part, const int64_t &t1, const int64_t &t2, int64_t &dst_index)
+    {
+        for (int64_t index = t1; index < t2; ++index)
+        {
+            dst[dst_index * index_strides] = left_part[index * index_strides];
+            ++dst_index;
+        }
+    };
+
+
+    dist(left_part, start_index, medium_index);
+    dist(right_part, medium_index + 1, end_index);
+    
+
+    int64_t dst_i = start_index, left_i = 0, right_i = 0;
+    while (left_i < static_cast<int64_t>(left_part.size()) && right_i < static_cast<int64_t>(right_part.size()))
+    {
+        switch (descending)
+        {
+            case true:
+                if (left_part[left_i * index_strides] > right_part[right_i * index_strides])
+                {
+                    dst[dst_i * index_strides] = left_part[left_i * index_strides];
+                    ++left_i;
+                }
+                else
+                {
+                    dst[dst_i * index_strides] = right_part[right_i * index_strides];
+                    ++right_i;
+                }
+                break;
+            case false:
+                if (left_part[left_i * index_strides] < right_part[right_i * index_strides])
+                {
+                    dst[dst_i * index_strides] = left_part[left_i * index_strides];
+                    ++left_i;
+                }
+                else
+                {
+                    dst[dst_i * index_strides] = right_part[right_i * index_strides];
+                    ++right_i;
+                }
+                break;
+        }
+
+        ++dst_i;
+    }
+
+    // copy the remaining left_part & right_part to dst.
+    concat(left_part, left_i, static_cast<int64_t>(left_part.size()), dst_i);
+    concat(right_part, right_i, static_cast<int64_t>(right_part.size()), dst_i);
+}
+
+
+// msort: Merge sort.
+template<typename T>
+static void msort(T *dst, const int64_t index_strides, const int64_t start_index, const int64_t end_index, const bool descending)
+{
+    if (start_index < end_index)
+    {
+        const int64_t medium_index = start_index + static_cast<int64_t>((end_index - start_index) / 2);
+
+        msort(dst, index_strides, start_index, medium_index, descending);
+        msort(dst, index_strides, medium_index + 1, end_index, descending);
+
+        merge(dst, index_strides, start_index, medium_index, end_index, descending);
+    }
+}
+
+
+template <typename T>
+using SortAlgo = void (*)(T*, const int64_t, const int64_t, const int64_t, const bool);
+
+// conductSort: Conducting the sorting algorithm.
 template<typename T>
 static inline void conductSort(T *_dst_ptr, const int64_t group_size, const int64_t index_strides, 
-                               const int64_t sorted_size, const bool descending, 
-                               void (*_sort)(T*, const int64_t, const int64_t, const int64_t, const bool))
+                               const int64_t sorted_size, const bool descending, SortAlgo<T> _sort)
 {
     for (int64_t row = 0; row < group_size; ++row)
     {
@@ -72,16 +163,13 @@ static inline void conductSort(T *_dst_ptr, const int64_t group_size, const int6
 }
 
 
-template <typename T>
-using SortMethod = void (*)(T*, const int64_t, const int64_t, const int64_t, const bool);
-
+// getSortAlgo: Getting the sorting algorithm via stable flag.
 template<typename T>
-static inline SortMethod<T> getSort(const bool stable)
+static inline SortAlgo<T> getSortAlgo(const bool stable)
 {
-    // TODO: It will be chagned to merge sort.
     if (stable)
     {
-        return &qsort<T>;
+        return &msort<T>;
     }
 
     return &qsort<T>;
@@ -141,68 +229,73 @@ Tensor sort(const Tensor &src, int64_t dim, const bool descending, const bool st
         case ndpp_memory::ScalarType::UInt8:  
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type>(stable));
             break;
         case ndpp_memory::ScalarType::UInt16: 
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt16>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt16>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt16>::type>(stable));
             break;
         case ndpp_memory::ScalarType::UInt32: 
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt32>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt32>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt32>::type>(stable));
             break;
         case ndpp_memory::ScalarType::UInt64:
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt64>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt64>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt64>::type>(stable));
             break;
         case ndpp_memory::ScalarType::Int8:
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int8>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int8>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int8>::type>(stable));
             break;
         case ndpp_memory::ScalarType::Int16:
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int16>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int16>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int16>::type>(stable));
             break;
         case ndpp_memory::ScalarType::Int32:
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int32>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int32>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int32>::type>(stable));
             break;
         case ndpp_memory::ScalarType::Int64:
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int64>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int64>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int64>::type>(stable));
             break;
 
     #ifdef HALF
         case ndpp_memory::ScalarType::Float16:
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float16>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float16>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float16>::type>(stable));
             break;
     #endif
             
         case ndpp_memory::ScalarType::Float32:
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float32>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float32>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float32>::type>(stable));
 
             break;
         case ndpp_memory::ScalarType::Float64:
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type>(stable));
             break;
         case ndpp_memory::ScalarType::Bool:
             conductSort(static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type*>(_dst.data()), 
                         group_size, index_strides, sorted_size, descending, 
-                        getSort<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type>(stable));
+                        getSortAlgo<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type>(stable));
             break;
+    }
+
+    if (src.device() == ndpp_memory::DeviceType::Host)
+    {
+        return _dst;
     }
 
     return _dst.clone(src.device()); 

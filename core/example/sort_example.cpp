@@ -24,7 +24,7 @@ int main()
     }
 
     double start_time = omp_get_wtime();
-    Tensor tensor_sort = ndpp::sort(tensor_test, 1, true);
+    Tensor tensor_sort = ndpp::sort(tensor_test, 1, true, true);
     double end_time = omp_get_wtime();
 
     cout << "Origin: " << endl;
