@@ -38,6 +38,12 @@ template <ScalarType T> struct ScalarTypeToCppType;
 // - https://github.com/pytorch/pytorch/blob/3d96925b9b42a329b07cd302e08c3990c15a34a6/torch/headeronly/core/ScalarType.h#L270
 template <typename T> struct CppTypeToScalarType;
 
+// Convert ndpp_memory::ScalarType to std::string.
+std::string scalarTypeToCppStr(const ScalarType stype);
+
+// Convert std::string to ndpp_memory::ScalarType.
+ScalarType cppStrToScalarType(const std::string stype);
+
 // Get sizeof(T) * num.
 template<typename T>
 static inline size_t sizeOf(const size_t num);
