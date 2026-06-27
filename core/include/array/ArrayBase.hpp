@@ -23,11 +23,14 @@ namespace ndpp_array_base
     _dtype = ndpp_memory::DeviceType::Host.
     _dstatus = ndpp_memory::DeviceStatus::Allocation.
 */
-template<typename T>
+template<class T>
 class ArrayDevice
 {
 public:
     inline ArrayDevice();
+    inline ArrayDevice(ArrayDevice<T> &&src);
+    inline ArrayDevice(const ArrayDevice<T> &src);
+
     virtual inline ~ArrayDevice();
 
 protected:
@@ -61,19 +64,50 @@ private:
     ndpp_memory::DeviceStatus _dstatus = ndpp_memory::DeviceStatus::Allocation;
 };
 
-template<typename T>
+template<class T>
 inline ArrayDevice<T>::ArrayDevice()
 {
     DeviceReset();
 }
 
-template<typename T>
+template<class T>
+inline ArrayDevice<T>::ArrayDevice(ArrayDevice<T> &&src) : _data(src._data), _size(src._size), 
+                                                           _dtype(src._dtype), _dstatus(src._dstatus)
+{
+    src._data = nullptr;
+    src._size = 0;
+    src._dtype = ndpp_memory::DeviceType::Host; 
+    src._dstatus = ndpp_memory::DeviceStatus::Allocation;
+}
+
+template<class T>
+inline ArrayDevice<T>::ArrayDevice(const ArrayDevice<T> &src)
+{
+    if (this == &src)
+    {
+        return;
+    }
+
+    switch (src._dstatus)
+    {
+    case ndpp_memory::DeviceStatus::Allocation:
+        DeviceCopy(src._data, src._dtype, src._dtype, src._size, 
+                   "ArrayBase.hpp", "ArrayDevice<T>::ArrayDevice(const ArrayDevice<T>&)");
+        break;
+    case ndpp_memory::DeviceStatus::Reference:
+        DeviceRefer(src._data, src._size, src._dtype,
+                    "ArrayBase.hpp", "ArrayDevice<T>::ArrayDevice(const ArrayDevice<T>&)");
+        break;
+    }
+}
+
+template<class T>
 inline ArrayDevice<T>::~ArrayDevice()
 {
     DeviceDeAlloc("ArrayBase.hpp", "ArrayDevice<T>::~ArrayDevice()");
 }
 
-template<typename T>
+template<class T>
 inline void ArrayDevice<T>::DeviceAlloc(const size_t size, const ndpp_memory::DeviceType device_type,
                                         const string &file_name, const string &method_name)
 {
@@ -90,7 +124,7 @@ inline void ArrayDevice<T>::DeviceAlloc(const size_t size, const ndpp_memory::De
     }
 }
 
-template<typename T>
+template<class T>
 inline void ArrayDevice<T>::DeviceReset()
 {
     this->_size = 0;
@@ -99,7 +133,7 @@ inline void ArrayDevice<T>::DeviceReset()
     this->_dstatus = ndpp_memory::DeviceStatus::Allocation;
 }
 
-template<typename T>
+template<class T>
 inline void ArrayDevice<T>::DeviceDeAlloc(const string &file_name, const string &method_name)
 {
     if (this->_data && this->_size > 0 && 
@@ -113,10 +147,15 @@ inline void ArrayDevice<T>::DeviceDeAlloc(const string &file_name, const string 
     DeviceReset();
 }
 
-template<typename T>
+template<class T>
 inline void ArrayDevice<T>::DeviceRefer(T *data, const size_t size, const ndpp_memory::DeviceType dtype,
                                         const string &file_name, const string &method_name)
 {
+    if (this->_data == data)
+    {
+        return;
+    }
+
     DeviceDeAlloc(file_name, method_name);
 
     this->_data = data;
@@ -125,11 +164,16 @@ inline void ArrayDevice<T>::DeviceRefer(T *data, const size_t size, const ndpp_m
     this->_dstatus = ndpp_memory::DeviceStatus::Reference;
 }
 
-template<typename T>
+template<class T>
 inline void ArrayDevice<T>::DeviceCopy(const T *src, const ndpp_memory::DeviceType src_device_type, 
                                        const ndpp_memory::DeviceType dst_device_type, const size_t size, 
                                        const string &file_name, const string &method_name)
 {
+    if (this->_data == src)
+    {
+        return;
+    }
+
     DeviceAlloc(size, dst_device_type, file_name, method_name);
     
     ndpp_memory::mixMemoryCopy(src, src_device_type,
@@ -137,7 +181,7 @@ inline void ArrayDevice<T>::DeviceCopy(const T *src, const ndpp_memory::DeviceTy
                                file_name, method_name);
 }
 
-template<typename T>
+template<class T>
 inline void ArrayDevice<T>::DeviceCopyTo(T *dst, const ndpp_memory::DeviceType dst_device_type,
                                          const string &file_name, const string &method_name)
 {
@@ -146,25 +190,25 @@ inline void ArrayDevice<T>::DeviceCopyTo(T *dst, const ndpp_memory::DeviceType d
                                file_name, method_name);
 }
 
-template<typename T>
+template<class T>
 inline T* ArrayDevice<T>::DevicePtr() const
 {
     return this->_data;
 }
 
-template<typename T>
+template<class T>
 inline size_t ArrayDevice<T>::DeviceSize() const
 {
     return this->_size;
 }
 
-template<typename T>
+template<class T>
 inline ndpp_memory::DeviceType ArrayDevice<T>::DeviceTy() const
 {
     return this->_dtype;
 }
 
-template<typename T>
+template<class T>
 inline ndpp_memory::DeviceStatus ArrayDevice<T>::DeviceSt() const
 {
     return this->_dstatus;

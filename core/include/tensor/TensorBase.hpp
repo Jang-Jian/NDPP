@@ -34,6 +34,9 @@ class TensorDevice
 {
 public:
     TensorDevice();
+    TensorDevice(TensorDevice &&src);
+    TensorDevice(const TensorDevice &src);
+    
     virtual ~TensorDevice();
 
 protected:
@@ -49,7 +52,7 @@ protected:
                      const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype,
                      const string &file_name, const string &method_name);
 
-    void DeviceMigrate(void **data, size_t **shape, size_t **strides, const size_t dim,
+    void DeviceMigrate(void **data, size_t **shape, size_t **strides, size_t &dim,
                        ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, ndpp_memory::DeviceType &info_dtype, 
                        ndpp_memory::DeviceStatus &dstatus, const string &file_name, const string &method_name);
 
@@ -85,7 +88,7 @@ inline void* TensorDevice::DevicePtr() const
 }
 
 inline size_t TensorDevice::DeviceDim() const
-{
+{ 
     return this->_dim;
 }
 

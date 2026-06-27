@@ -36,6 +36,34 @@ TensorDevice::TensorDevice()
     DeviceReset();
 }
 
+TensorDevice::TensorDevice(TensorDevice &&src)
+{
+    DeviceMigrate((void**)&src._data, (size_t**)&src._shape, (size_t**)&src._strides, 
+                  src._dim, src._stype, src._data_dtype, src._info_dtype, src._dstatus,
+                  "TensorBase.cpp", "TensorDevice::TensorDevice(TensorDevice&&");
+}
+
+TensorDevice::TensorDevice(const TensorDevice &src)
+{
+    if (this == &src)
+    {
+        return;
+    }
+
+    switch (src.DeviceSt())
+    {
+    case ndpp_memory::DeviceStatus::Allocation:
+        DeviceCopy(src._data, src._stype, src._data_dtype, src._data_dtype, 
+                   src.DeviceShape(), src.DeviceStrides(), 
+                   "TensorDevice.cpp", "TensorDevice::TensorDevice(const TensorDevice&)");
+        break;
+    case ndpp_memory::DeviceStatus::Reference:
+        DeviceRefer(src._data, src.DeviceShape(), src.DeviceStrides(), src._stype, src._data_dtype,
+                    "TensorDevice.cpp", "TensorDevice::TensorDevice(const TensorDevice&)");
+        break;
+    }
+}
+
 TensorDevice::~TensorDevice()
 {
     DeviceDeAlloc("TensorDevice.cpp", "TensorDevice<T>::~TensorDevice()");
@@ -46,7 +74,7 @@ void TensorDevice::DeviceAlloc(const SizeTArray &shape, const SizeTArray &stride
                                const string &file_name, const string &method_name)
 {
     DeviceDeAlloc(file_name, method_name);
-    
+
     // Get actual shape & strides.
     SizeTArray _act_shape, _act_strides;
     ndpp_data_arch::calcShape(shape, strides, _act_shape, ndpp_memory::DeviceType::Host,
@@ -164,7 +192,7 @@ void TensorDevice::DeviceRefer(void *data, const SizeTArray &shape, const SizeTA
     }   
 }
 
-void TensorDevice::DeviceMigrate(void **data, size_t **shape, size_t **strides, const size_t dim,
+void TensorDevice::DeviceMigrate(void **data, size_t **shape, size_t **strides, size_t &dim,
                                  ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, ndpp_memory::DeviceType &info_dtype, 
                                  ndpp_memory::DeviceStatus &dstatus, const string &file_name, const string &method_name)
 {
@@ -172,7 +200,6 @@ void TensorDevice::DeviceMigrate(void **data, size_t **shape, size_t **strides, 
     {
         return;
     }
-
     
     if (this->_shape && shape[0] && this->_shape == shape[0])
     {
@@ -198,6 +225,7 @@ void TensorDevice::DeviceMigrate(void **data, size_t **shape, size_t **strides, 
     shape[0] = nullptr;
     strides[0] = nullptr;
     data[0] = nullptr;
+    dim = 0;
     stype = ndpp_memory::ScalarType::UInt8;
     data_dtype = ndpp_memory::DeviceType::Host;
     info_dtype = ndpp_memory::DeviceType::Host;
@@ -210,11 +238,6 @@ void TensorDevice::DeviceCopy(const void *data, const ndpp_memory::ScalarType sr
                               const SizeTArray &shape, const SizeTArray &strides, 
                               const string &file_name, const string &method_name)
 {
-    if (this->_data == data)
-    {
-        return;
-    }
-
     DeviceDeAlloc(file_name, method_name);
 
     if (!data)

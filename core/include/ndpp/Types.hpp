@@ -31,4 +31,5 @@ constexpr auto Float32 = ndpp_memory::ScalarType::Float32;
 constexpr auto Float64 = ndpp_memory::ScalarType::Float64;
 constexpr auto Bool = ndpp_memory::ScalarType::Bool;    
 
-};
+
+}; // namespace ndpp

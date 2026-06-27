@@ -29,13 +29,20 @@ If you wanna build the code for RTX-30 series cards use, you could type
 make -j2 WITH_CUDA=1 WITH_HALF=1 WITH_CUDA_SM=80,86,87 WITH_CUDA_ARCH=80
 ```
 
-## Function.
+## Method.
 
 ### Container.
 
-* ndpp::Array<T>: [Sample code for C++](core/example/array_example.cpp).
-* ndpp::Tensor: [Sample code for C++](core/example/tensor_example.cpp).
+* Generic (ndpp::Generic): Generic data type implementation using type-erased. 
+    * [Sample code for C++](core/example/generic_example.cpp).
+* Array (ndpp::Array): A Container that encapsulates fixed size arrays. 
+    * [Sample code for C++](core/example/array_example.cpp).
+* Tensor (ndpp::Tensor): Representing a multi-dimensional array with a specific scalar type and device.
+    * [Sample code for C++](core/example/tensor_example.cpp).
+* List (ndpp::Tensor): It is a container that supports inserting generic data type, and it's implemented as a doubly-linked list.
+    * [Sample code for C++](core/example/list_example.cpp).
 
 ### Algorithm.
 
-* ndpp::sort: [Sample code for C++](core/example/sort_example.cpp).
+* Sorts the elements of the src tensor along a given dimension in ascending order by value (used for ndpp:Tensor).
+    * [Sample code for C++](core/example/sort_example.cpp).

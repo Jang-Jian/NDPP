@@ -25,9 +25,10 @@ class Tensor : private ndpp_tensor_base::TensorDevice
 {
 public:
     Tensor() = default;
-    virtual ~Tensor() = default;
-
+    inline Tensor(Tensor &&src);
     inline Tensor(const Tensor &src);
+
+    virtual ~Tensor() = default;
 
     /* 
         Used for the specified situation.
@@ -122,7 +123,7 @@ public:
 
     // Migrate from data pointers (data, shape & strides).
     // P.S It will reset all pointers which comes from input to nullptr after pointer migration.
-    inline void migrate(void **data, size_t **shape, size_t **strides, const size_t dim,
+    inline void migrate(void **data, size_t **shape, size_t **strides, size_t &dim,
                         ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, 
                         ndpp_memory::DeviceType &info_dtype, ndpp_memory::DeviceStatus &dstatus);
 
@@ -153,22 +154,21 @@ private:
     inline T toItem(const string &operator_name) const;
 };
 
-inline Tensor::Tensor(const Tensor &src)
+inline Tensor::Tensor(Tensor &&src) : ndpp_tensor_base::TensorDevice(std::move(src))
 {
-    switch (src.status())
-    {
-    case ndpp_memory::DeviceStatus::Allocation:
-        copy(src, src.device());
-        break;
-    case ndpp_memory::DeviceStatus::Reference:
-        refer(src);
-        break;
-    }
+}
+
+inline Tensor::Tensor(const Tensor &src) : ndpp_tensor_base::TensorDevice(src)
+{
 }
 
 inline Tensor& Tensor::operator=(const Tensor &src)
 {
-    copy(src, src.device());
+    if (this != &src)
+    {
+        copy(src, src.device());
+    }
+
     return *this;
 }
 
@@ -377,8 +377,11 @@ inline ndpp_memory::DeviceStatus Tensor::status() const
 
 inline void Tensor::copy(const Tensor &src, const ndpp_memory::DeviceType dtype)
 {
-    DeviceCopy(src.data(), src.scalar(), src.device(), dtype, 
-               src.sizes(), src.strides(), "Tensor.hpp", "Tensor::copy()");
+    if (this != &src)
+    {
+        DeviceCopy(src.data(), src.scalar(), src.device(), dtype, 
+                   src.sizes(), src.strides(), "Tensor.hpp", "Tensor::copy()");   
+    }
 }
 
 inline Tensor Tensor::clone(const ndpp_memory::DeviceType dtype) const
@@ -397,11 +400,14 @@ inline void Tensor::refer(void *data, const SizeTArray &shape, const SizeTArray 
 
 inline void Tensor::refer(const Tensor &src)
 {
-    refer(src.data(), src.sizes(), src.strides(), 
-          src.scalar(), src.device());
+    if (this != &src)
+    {
+        refer(src.data(), src.sizes(), src.strides(), 
+              src.scalar(), src.device());
+    }
 }
 
-inline void Tensor::migrate(void **data, size_t **shape, size_t **strides, const size_t dim,
+inline void Tensor::migrate(void **data, size_t **shape, size_t **strides, size_t &dim,
                             ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, 
                             ndpp_memory::DeviceType &info_dtype, ndpp_memory::DeviceStatus &dstatus)
 {

@@ -19,12 +19,13 @@ class Array : private ndpp_array_base::ArrayDevice<T>
 {
 public:
     Array() = default;
-    virtual ~Array() = default;
+    inline Array(Array<T> &&src);
     inline Array(const Array<T> &src);
     inline Array(const initializer_list<T> &src); // host memory only.
     inline Array(const size_t size, const ndpp_memory::DeviceType dtype);
     inline Array(T *data, const size_t size, const ndpp_memory::DeviceType dtype);
-    
+
+    virtual ~Array() = default;
 
     // Access specified element without bounds checking.
     inline T& operator[](const size_t pos) const;
@@ -83,17 +84,13 @@ public:
 };
 
 template<class T>
-inline Array<T>::Array(const Array<T> &src)
+inline Array<T>::Array(Array<T> &&src) : ndpp_array_base::ArrayDevice<T>(std::move(src))
 {
-    switch (src.status())
-    {
-    case ndpp_memory::DeviceStatus::Allocation:
-        copy(src, src.device());
-        break;
-    case ndpp_memory::DeviceStatus::Reference:
-        refer(src);
-        break;
-    }
+}
+
+template<class T>
+inline Array<T>::Array(const Array<T> &src) : ndpp_array_base::ArrayDevice<T>(src)
+{
 }
 
 template<class T>
@@ -197,8 +194,11 @@ inline ndpp_memory::DeviceStatus Array<T>::status() const
 template<class T>
 inline void Array<T>::copy(const Array<T> &src, const ndpp_memory::DeviceType dtype)
 {
-    ndpp_array_base::ArrayDevice<T>::DeviceCopy(src.data(), src.device(), dtype, src.size(), 
-                                                "Array.hpp", "Array<T>::copy()");
+    if (this != &src)
+    {
+        ndpp_array_base::ArrayDevice<T>::DeviceCopy(src.data(), src.device(), dtype, src.size(), 
+                                                    "Array.hpp", "Array<T>::copy()");
+    }
 }
 
 template<class T>
@@ -220,7 +220,10 @@ inline void Array<T>::refer(T *data, const size_t size,
 template<class T>
 inline void Array<T>::refer(const Array<T> &src)
 {
-    refer(src.data(), src.size(), src.device());
+    if (this != &src)
+    {
+        refer(src.data(), src.size(), src.device());
+    }
 }
 
 template<class T>
@@ -228,6 +231,11 @@ inline void Array<T>::migrateTo(T **dst, size_t &array_size,
                                 ndpp_memory::DeviceType &dtype,
                                 ndpp_memory::DeviceStatus &dstatus)
 {
+    if (dst[0] == data())
+    {
+        return;
+    }
+
     dst[0] = data();
     array_size = size();
     dtype = device();
@@ -247,7 +255,6 @@ inline void Array<T>::allocate(const size_t size,
 template<class T>
 inline void Array<T>::destory()
 {
-    string msg;
     ndpp_array_base::ArrayDevice<T>::DeviceDeAlloc("Array.hpp", "Array<T>::destory()");
 }
 
