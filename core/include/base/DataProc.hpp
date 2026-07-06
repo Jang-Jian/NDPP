@@ -14,10 +14,10 @@ namespace ndpp
 namespace ndpp_memory
 {
     // Specifying the value at specific memory address.
-    static inline void memset(void *dst, const void *value, 
-                              const ScalarType dst_stype, const ScalarType value_stype,
-                              const DeviceType dst_dtype, const size_t size, 
-                              const string &file_name, const string &method_name);
+    inline void memset(void *dst, const void *value, 
+                       const ScalarType dst_stype, const ScalarType value_stype,
+                       const DeviceType dst_dtype, const size_t size, 
+                       const string &file_name, const string &method_name);
 
 }; // namespace ndpp::ndpp_memory
 
@@ -26,7 +26,7 @@ namespace ndpp_memory
 
 // cpuMemsetImpleKernel(OpenMP): Specifying the value at specific memory address.
 template<typename T>
-static inline void cpuMemsetImpleKernel(T *src, const void *value, const ScalarType value_stype, const size_t size)
+inline void cpuMemsetImpleKernel(T *src, const void *value, const ScalarType value_stype, const size_t size)
 {
     const auto fill = [&](const T &v)
     {
@@ -83,10 +83,10 @@ static inline void cpuMemsetImpleKernel(T *src, const void *value, const ScalarT
 }
 
 
-static inline void memset(void *dst, const void *value, 
-                          const ScalarType dst_stype, const ScalarType value_stype,
-                          const DeviceType dst_dtype, const size_t size, 
-                          const string &file_name, const string &method_name)
+inline void memset(void *dst, const void *value, 
+                   const ScalarType dst_stype, const ScalarType value_stype,
+                   const DeviceType dst_dtype, const size_t size, 
+                   const string &file_name, const string &method_name)
 {
     if (!dst || !value)
     {
@@ -169,8 +169,8 @@ static inline void memset(void *dst, const void *value,
     #endif
     }
 
-}; // namespace ndpp::ndpp_memory
-
 }
+
+}; // namespace ndpp::ndpp_memory
 
 }; // namespace ndpp

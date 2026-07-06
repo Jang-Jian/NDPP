@@ -99,7 +99,7 @@ void calcStrides(const SizeTArray &src_shape, const ndpp_memory::ScalarType styp
     
     //cout << "mul_val: " << mul_val << endl;
 
-    for (int cur_idx = 0; cur_idx < (int)shape_dim - 1; ++cur_idx)
+    /*for (int cur_idx = 0; cur_idx < (int)shape_dim - 1; ++cur_idx)
     {
         unsigned int stride = stype_size;
 
@@ -109,7 +109,17 @@ void calcStrides(const SizeTArray &src_shape, const ndpp_memory::ScalarType styp
         }
 
         dst_strides[cur_idx] = stride;
+    }*/
+
+
+    unsigned int stride = stype_size;
+
+    for (int i = shape_dim - 2; i >= 0; --i)
+    {
+        stride *= src_shape[i + 1];
+        dst_strides[i] = stride;
     }
+
 
     if (mul_val > 0)
     {

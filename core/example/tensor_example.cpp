@@ -13,14 +13,14 @@ using namespace ndpp;
 #define device ndpp::Host
 #endif
 
-#define scalar_t ndpp::UInt8
+#define scalar_t ndpp::Float32
 
 
 int main()
 {
 
 //while (1)
-//    {
+ //   {
 #ifdef CUDA
     ndpp::ndpp_memory::ndpp_cuda::cudaExecDevice(device_id_t, "tensor_example.cpp", "main()");
 #endif
@@ -128,8 +128,16 @@ int main()
 
      cout << "elapsed_time_1: " << elapsed_time_1 << endl;
      //cout << "elapsed_time_2: " << elapsed_time_2 << endl;
-//}
 
+
+    Tensor tensor_test22 = ndpp::full(66.0f, {6}, scalar_t, ndpp::Host);
+
+    for (int index = 0; index < 5; ++index)
+    {
+        cout << float(tensor_test22[index]) << ", ";
+    }
+    cout << endl;
+   //} 
 
     return 0;
 }

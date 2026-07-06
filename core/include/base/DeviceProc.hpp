@@ -21,19 +21,19 @@ enum class DeviceStatus;
 
 // mixMemoryAlloc: Dynamic Memory Allocation which mixes host & cuda.
 template<typename dtype>
-static inline dtype* mixMemoryAlloc(const size_t size, const DeviceType device_type,
-                                    const string &file_name, const string &method_name);
+inline dtype* mixMemoryAlloc(const size_t size, const DeviceType device_type,
+                             const string &file_name, const string &method_name);
 
 // mixMemoryDeAlloc: Dynamic Memory Deallocation which mixes host & cuda.
 template<typename dtype>
-static inline void mixMemoryDeAlloc(dtype *src, const DeviceType device_type,
-                                    const string &file_name, const string &method_name);
+inline void mixMemoryDeAlloc(dtype *src, const DeviceType device_type,
+                             const string &file_name, const string &method_name);
 
 // mixMemoryDeAlloc: Dynamic Memory Deallocation which mixes host & cuda.
 template<typename dtype>
-static inline void mixMemoryCopy(const dtype *src, const DeviceType src_device_type,
-                                 dtype *dst, const DeviceType dst_device_type, const size_t size,
-                                 const string &file_name, const string &method_name);
+inline void mixMemoryCopy(const dtype *src, const DeviceType src_device_type,
+                          dtype *dst, const DeviceType dst_device_type, const size_t size,
+                          const string &file_name, const string &method_name);
 
 }; // namespace ndpp::ndpp_memory
 
@@ -54,8 +54,8 @@ enum class DeviceStatus
 
 
 template<typename dtype>
-static inline dtype* mixMemoryAlloc(const size_t size, const DeviceType device_type,
-                                    const string &file_name, const string &method_name)
+inline dtype* mixMemoryAlloc(const size_t size, const DeviceType device_type,
+                             const string &file_name, const string &method_name)
 {
     if (size == 0)
     {
@@ -94,8 +94,8 @@ static inline dtype* mixMemoryAlloc(const size_t size, const DeviceType device_t
 
 
 template<typename dtype>
-static inline void mixMemoryDeAlloc(dtype *src, const DeviceType device_type,
-                                    const string &file_name, const string &method_name)
+inline void mixMemoryDeAlloc(dtype *src, const DeviceType device_type,
+                             const string &file_name, const string &method_name)
 {
     if (!src)
     {
@@ -130,9 +130,9 @@ static inline void mixMemoryDeAlloc(dtype *src, const DeviceType device_type,
 
 
 template<typename dtype>
-static inline void mixMemoryCopy(const dtype *src, const DeviceType src_device_type,
-                                 dtype *dst, const DeviceType dst_device_type, const size_t size,
-                                 const string &file_name, const string &method_name)
+inline void mixMemoryCopy(const dtype *src, const DeviceType src_device_type,
+                          dtype *dst, const DeviceType dst_device_type, const size_t size,
+                          const string &file_name, const string &method_name)
 {
     if (!src || !dst || size == 0)
     {

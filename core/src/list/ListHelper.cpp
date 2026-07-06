@@ -1,32 +1,61 @@
+#include <cmath>
+
 #include <include/list/List.hpp>
 #include <include/logging/Logging.hpp>
+
+using namespace std;
 
 
 namespace ndpp
 {
 
-ListIterator next(ListIterator src, const size_t steps)
+
+void advance(ListIterator &src, const std::ptrdiff_t steps)
 {
     NodeDevice *_node = &(*src);
     if (!_node)
     {
-        return ListIterator(nullptr);
+        src = ListIterator(nullptr);
     }
 
-    for (size_t index = 0; index < steps; ++index)
+    if (steps == 0)
     {
-        NodeDevice *_next = &_node->nextNode();
-        if (!_next)
+        return;
+    }
+
+    if (steps > 0)
+    {
+        for (std::ptrdiff_t index = 0; index < steps; ++index)
         {
-            break;
+            NodeDevice *_next = &_node->nextNode();
+            if (!_next)
+            {
+                break;
+            }
+            else
+            {
+                _node =_next;
+            }
         }
-        else
+    }
+    else
+    {
+        for (std::ptrdiff_t index = 0; index < std::abs(steps); ++index)
         {
-            _node =_next;
+            NodeDevice *_prev = &_node->prevNode();
+            if (!_prev)
+            {
+                break;
+            }
+            else
+            {
+                _node = _prev;
+            }
         }
     }
 
-    return ListIterator(_node);
+    src = ListIterator(_node);
 }
+
 
 }; // namespace ndpp

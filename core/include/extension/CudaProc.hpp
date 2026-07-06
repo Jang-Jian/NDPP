@@ -46,7 +46,7 @@ enum class CudaDeviceType
 
 
 // Check wether to has error after cuda exection.
-static inline bool cudaErrorChecker(const cudaError_t status, const string &file_name, const string &method_name)
+inline bool cudaErrorChecker(const cudaError_t status, const string &file_name, const string &method_name)
 {
     //cudaDeviceSynchronize();
     cudaError_t status2 = cudaGetLastError();
@@ -74,8 +74,8 @@ static inline bool cudaErrorChecker(const cudaError_t status, const string &file
 
 // Memory allocation with different cuda's memory types.
 template<typename dtype>
-static inline dtype* cudaMemoryAlloc(const size_t size, const CudaDeviceType cudevice_type, 
-                                     const string &file_name, const string &method_name)
+inline dtype* cudaMemoryAlloc(const size_t size, const CudaDeviceType cudevice_type, 
+                              const string &file_name, const string &method_name)
 {
     if (size == 0)
     {
@@ -111,8 +111,8 @@ static inline dtype* cudaMemoryAlloc(const size_t size, const CudaDeviceType cud
 
 
 // Memory deallocation with different cuda's memory types.
-static inline void cudaMemoryDeAlloc(void *src_ptr, const CudaDeviceType cudevice_type, 
-                                     const string &file_name, const string &method_name)
+inline void cudaMemoryDeAlloc(void *src_ptr, const CudaDeviceType cudevice_type, 
+                              const string &file_name, const string &method_name)
 {
     if (!src_ptr)
     {
@@ -138,8 +138,8 @@ static inline void cudaMemoryDeAlloc(void *src_ptr, const CudaDeviceType cudevic
     @para
     - kind: cudaMemcpyHostToDevice, cudaMemcpyDeviceToHost, cudaMemcpyDeviceToDevice, cudaMemcpyHostToHost.
 */
-static inline void cudaMemoryCopy(const void *src_ptr, void *dst_ptr, const cudaMemcpyKind kind, const size_t size,
-                                  const string &file_name, const string &method_name)
+inline void cudaMemoryCopy(const void *src_ptr, void *dst_ptr, const cudaMemcpyKind kind, const size_t size,
+                           const string &file_name, const string &method_name)
 {
     if (!src_ptr)
     {
@@ -159,7 +159,7 @@ static inline void cudaMemoryCopy(const void *src_ptr, void *dst_ptr, const cuda
     Used for ndpp::ndpp_memory::CudaDeviceType::CudaZeroCpy
     reference: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gc00502b44e5f1bdc0b424487ebb08db0
 */
-static inline void* cudaHostGetGpuPointer(const void *src_ptr, const string &file_name, const string &method_name)
+inline void* cudaHostGetGpuPointer(const void *src_ptr, const string &file_name, const string &method_name)
 {
     if (!src_ptr)
     {
@@ -174,7 +174,7 @@ static inline void* cudaHostGetGpuPointer(const void *src_ptr, const string &fil
 
 
 // Configure the cuda device id.
-static inline bool cudaExecDevice(const int device, const string &file_name, const string &method_name)
+inline bool cudaExecDevice(const int device, const string &file_name, const string &method_name)
 {
     return cudaErrorChecker(cudaSetDevice(device), file_name, method_name);
 }
@@ -182,7 +182,7 @@ static inline bool cudaExecDevice(const int device, const string &file_name, con
 
 // Allocate cuda executed grid size.
 // Reference: https://github.com/pjreddie/darknet/blob/master/src/cuda.c#L51
-static inline dim3 cudaExecGrid(const size_t all_threads_num, const size_t per_block_threads_num)
+inline dim3 cudaExecGrid(const size_t all_threads_num, const size_t per_block_threads_num)
 {
     size_t k = (all_threads_num - 1) / per_block_threads_num + 1;
     size_t x = k;

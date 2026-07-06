@@ -2,6 +2,8 @@
 
 #include <iterator>
 
+#include <include/logging/Logging.hpp>
+
 
 namespace ndpp
 {
@@ -28,7 +30,16 @@ public:
     inline explicit BasicIterator(pointer t_ptr) : _t_ptr(t_ptr) {}
 
     // 1. Dereference operator
-    inline reference operator*() { return *_t_ptr; }
+    inline reference operator*() 
+    { 
+        if (!_t_ptr)
+        {
+            ndpp_log::logger("BasicIterator.hpp", "BasicIterator<T>::operator*()", ndpp_log::RuntimeType::ERROR,
+                             "Self pointer is nullptr.", true);
+            exit(EXIT_FAILURE);
+        }
+        return *_t_ptr; 
+    }
     //pointer operator->() const { return _t_ptr; }
 
     // 2. Prefix increment operator

@@ -46,26 +46,26 @@ ScalarType cppStrToScalarType(const std::string stype);
 
 // Get sizeof(T) * num.
 template<typename T>
-static inline size_t sizeOf(const size_t num);
+inline size_t sizeOf(const size_t num);
 
 // Access the pointer via ndpp::ndpp_memory::ScalarType & specific position.
-static inline void* scalarPtrShift(const void *src, const ScalarType stype, const int64_t pos);
+inline void* scalarPtrShift(const void *src, const ScalarType stype, const int64_t pos);
 
 // Get the size of scalar via ndpp::ndpp_memory::ScalarType.
-static inline size_t sizeOfScalar(const ScalarType stype, const string &file_name, const string &method_name);
+inline size_t sizeOfScalar(const ScalarType stype, const string &file_name, const string &method_name);
 
 // Mixed memory allocation (host & cuda) via ndpp::ndpp_memory::ScalarType.
-static inline void* mixScalarAlloc(const size_t size, const ScalarType stype, const DeviceType device_type,
-                                   const string &file_name, const string &method_name);
+inline void* mixScalarAlloc(const size_t size, const ScalarType stype, const DeviceType device_type,
+                            const string &file_name, const string &method_name);
 
 // Mixed memory deallocation (host & cuda) via ndpp::ndpp_memory::ScalarType.                                   
-static inline void mixScalarDeAlloc(void *src, const ScalarType stype, const DeviceType device_type,
-                                    const string &file_name, const string &method_name);
+inline void mixScalarDeAlloc(void *src, const ScalarType stype, const DeviceType device_type,
+                             const string &file_name, const string &method_name);
 
 // Mixed memory copy (host & cuda) via ndpp::ndpp_memory::ScalarType.      
-static inline void mixScalarCopy(const void *src, const DeviceType src_device_type,
-                                 void *dst, const DeviceType dst_device_type, const ScalarType stype, const size_t size,
-                                 const string &file_name, const string &method_name);
+inline void mixScalarCopy(const void *src, const DeviceType src_device_type,
+                          void *dst, const DeviceType dst_device_type, const ScalarType stype, const size_t size,
+                          const string &file_name, const string &method_name);
 
 }; // namespace ndpp::ndpp_memory
 
@@ -158,13 +158,13 @@ template<> struct CppTypeToScalarType<bool>   : std::integral_constant<ScalarTyp
 
 
 template<typename T>
-static inline size_t sizeOf(const size_t num)
+inline size_t sizeOf(const size_t num)
 {
     return num * sizeof(T);
 }
 
 
-static inline void* scalarPtrShift(const void *src, const ScalarType stype, const int64_t pos)
+inline void* scalarPtrShift(const void *src, const ScalarType stype, const int64_t pos)
 {
     if (!src)
     {
@@ -228,8 +228,8 @@ struct ScalarPtrCuDevAccessor
 
 
 template<typename T>
-static inline T scalarPtrAccess(const void *src, const ScalarType stype, const DeviceType dtype, const int64_t pos,
-                                const string &file_name, const string &method_name)
+inline T scalarPtrAccess(const void *src, const ScalarType stype, const DeviceType dtype, const int64_t pos,
+                         const string &file_name, const string &method_name)
 {
     if (!src)
     {
@@ -348,8 +348,8 @@ static inline T scalarPtrAccess(const void *src, const ScalarType stype, const D
 }
 
 
-static inline size_t sizeOfScalar(const ScalarType stype, const string &file_name, 
-                                  const string &method_name)
+inline size_t sizeOfScalar(const ScalarType stype, const string &file_name, 
+                           const string &method_name)
 {
     switch (stype)
     {
@@ -387,8 +387,8 @@ static inline size_t sizeOfScalar(const ScalarType stype, const string &file_nam
 }
 
 
-static inline void* mixScalarAlloc(const size_t size, const ScalarType stype, const DeviceType device_type,
-                                   const string &file_name, const string &method_name)
+inline void* mixScalarAlloc(const size_t size, const ScalarType stype, const DeviceType device_type,
+                            const string &file_name, const string &method_name)
 {
     switch (stype)
     {
@@ -426,8 +426,8 @@ static inline void* mixScalarAlloc(const size_t size, const ScalarType stype, co
 }
 
 
-static inline void mixScalarDeAlloc(void *src, const ScalarType stype, const DeviceType device_type,
-                                    const string &file_name, const string &method_name)
+inline void mixScalarDeAlloc(void *src, const ScalarType stype, const DeviceType device_type,
+                             const string &file_name, const string &method_name)
 {
     switch (stype)
     {
@@ -474,9 +474,10 @@ static inline void mixScalarDeAlloc(void *src, const ScalarType stype, const Dev
     }
 }
 
-static inline void mixScalarCopy(const void *src, const DeviceType src_device_type,
-                                 void *dst, const DeviceType dst_device_type, const ScalarType stype, const size_t size,
-                                 const string &file_name, const string &method_name)
+
+inline void mixScalarCopy(const void *src, const DeviceType src_device_type,
+                          void *dst, const DeviceType dst_device_type, const ScalarType stype, const size_t size,
+                          const string &file_name, const string &method_name)
 {
     switch (stype)
     {

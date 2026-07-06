@@ -142,7 +142,7 @@ public:
     // P.S The stride will be calculated via shape, and the allocation will be moved to zerosV().
     inline void zerosB(const SizeTArray &shape, const ndpp_memory::ScalarType stype, 
                        const ndpp_memory::DeviceType dtype);
-
+                       
     // Deallocate the memory.
     inline void destory();
 

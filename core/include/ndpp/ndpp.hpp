@@ -2,6 +2,7 @@
 
 #include <include/ndpp/Types.hpp>
 #include <include/ndpp/Action.hpp>
+#include <include/base/Scalar.hpp>
 
 #include <include/array/Array.hpp>
 
