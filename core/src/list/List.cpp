@@ -55,4 +55,25 @@ void List::splice(ListIterator position, List &src)
     src._num = 0;
 }
 
+void List::reverse()
+{
+    NodeDevice *_current = this->_head;
+    NodeDevice *_next = nullptr;
+
+    while (_current)
+    {
+        NodeDevice *_next_org = _current->_next;
+
+        _current->_next = _next;
+        _current->_prev = _next_org;
+
+        _next = _current;
+        _current = _next_org;
+    }
+
+    // Recording the head & tail.
+    this->_tail = this->_head;
+    this->_head = _next;
+}
+
 }; // namespace ndpp

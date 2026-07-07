@@ -100,9 +100,22 @@ int main()
     cout << "size: " << test.size() << endl;
     for (auto node : test)
     {
-        cout << node.data().name() << endl;
+        cout << &node.data() << endl;
     }
     //}
+
+    test.reverse();
+    cout << "=========" << endl;
+    cout << "size: " << test.size() << endl;
+    for (auto node : test)
+    {
+        cout << &node.data() << endl;
+    }
+  /* for (auto it = test.rbegin(); it != test.rend(); --it) 
+    {
+        cout << &(*it).data() << endl;
+    }*/
+
 
     return 0;
 }

@@ -69,6 +69,12 @@ public:
     // Returns a reverse iterator to the end
     inline ListIterator rend() const;
 
+    // Returns a reference to the first element in the container.
+    inline NodeDevice& front() const;
+
+    // Returns a reference to the last element in the container.
+    inline NodeDevice& back() const;
+
     // Adds an element to the end (used for move constructor).
     inline void pushBack(Generic &&object);
 
@@ -109,6 +115,9 @@ public:
 
     // Moves elements from another List.
     void splice(ListIterator position, List &src);
+
+    // Reverses the order of the elements in the container.
+    void reverse();
 };
 
 inline List::List(List &&src) : ndpp_list_base::ListDevice(std::move(src))
@@ -152,6 +161,16 @@ inline ListIterator List::rbegin() const
 inline ListIterator List::rend() const
 {
     return ListIterator(nullptr);
+}
+
+inline NodeDevice& List::front() const
+{
+    return *this->_head;
+}
+
+inline NodeDevice& List::back() const
+{
+    return *this->_tail;
 }
 
 inline void List::pushBack(Generic &&object)
