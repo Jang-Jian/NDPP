@@ -41,6 +41,12 @@ make -j2 WITH_CUDA=1 WITH_HALF=1 WITH_CUDA_SM=80,86,87 WITH_CUDA_ARCH=80
     * [Sample code for C++](core/example/tensor_example.cpp).
 * List (ndpp::Tensor): It is a container that supports inserting generic data type, and it's implemented as a doubly-linked list.
     * [Sample code for C++](core/example/list_example.cpp).
+* Stack (ndpp::Stack): A LIFO (Last-In, First-Out) / FILO (First-In, Last-Out) data structure.
+    * [Sample code for C++](core/example/stack_example.cpp).
+    * The lazy object: Wrapped via ndpp::List.
+* Queue (ndpp::Queue): A FIFO (First-In, First-Out) / LILO (Last-In, Last-Out) data structure.
+    * [Sample code for C++](core/example/queue_example.cpp).
+    * The lazy object: Wrapped via ndpp::List.
 
 ### Algorithm.
 

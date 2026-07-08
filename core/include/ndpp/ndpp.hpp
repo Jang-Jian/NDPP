@@ -12,3 +12,6 @@
 
 #include <include/list/List.hpp>
 #include <include/list/ListHelper.hpp>
+
+#include <include/segment/Queue.hpp>
+#include <include/segment/Stack.hpp>

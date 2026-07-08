@@ -8,7 +8,7 @@ KERNEL_OBJS+=GpuDataProc.o
 endif
 
 # example.
-EXEAMPLE_OBJS=array_example.o generic_example.o scalar_example.o tensor_example.o sort_example.o list_example.o
+EXEAMPLE_OBJS=array_example.o generic_example.o scalar_example.o tensor_example.o sort_example.o list_example.o stack_example.o queue_example.o
 
 # libraries.
 CC_SHARED=$(DIR_LIBS)libndpp.so
