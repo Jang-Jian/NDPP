@@ -8,9 +8,9 @@ using namespace ndpp;
 
 #ifdef CUDA
 #define device_id_t 1
-#define device ndpp::CudaDevice
+#define device_t ndpp::CudaZeroCpy
 #else
-#define device ndpp::Host
+#define device_t ndpp::Host
 #endif
 
 #define scalar_t ndpp::Float32
@@ -24,7 +24,8 @@ int main()
 #ifdef CUDA
     ndpp::ndpp_memory::ndpp_cuda::cudaExecDevice(device_id_t, "tensor_example.cpp", "main()");
 #endif
-    Tensor tensor_test = ndpp::zeros({3, 4, 5}, scalar_t, device);
+    Tensor tensor_test = ndpp::zeros({3, 4, 5}, scalar_t, device_t);
+    Tensor tensor_test2 = ndpp::zeros({4, 5}, scalar_t, device_t);
 
     cout << "tensor_test ptr: " << tensor_test.data() << endl;
     cout << "tensor_test dim: " << tensor_test.dim() << endl;
@@ -50,43 +51,34 @@ int main()
 
     
 
-    double start_time_1 = omp_get_wtime();
-    //#pragma omp parallel for
-    for (int i = 0; i < 3; ++i)
+    //double start_time_1 = omp_get_wtime();
+    for (int i = 0; i < (int)shape[0]; ++i)
     {
-        for (int j = 0; j < 4; ++j)
+        for (int j = 0; j < (int)shape[1]; ++j)
         {
-            for (int k = 0; k < 5; ++k)
+            for (int k = 0; k < (int)shape[2]; ++k)
             {
                 //cout << float() << endl;
+                 tensor_test2[j][k] = k + j * 5;
                 tensor_test[i][j][k] = float(k + j * (5)+ i * 20);
             }
         }
     }
-    double end_time_1 = omp_get_wtime();
-    cout << endl;
+    //double end_time_1 = omp_get_wtime();
+    //cout << endl;
 
 
-#ifdef CUDA
-    Tensor tensor_test2;
-    tensor_test2.copy(tensor_test, ndpp_memory::DeviceType::CudaDevice);
-
-    cout << "tensor_test2:" << endl;
-    for (int i = 0; i < 3; ++i)
-    {
-        for (int j = 0; j < 4; ++j)
+    for (int j = 0; j < (int)shape[1]; ++j)
         {
-            for (int k = 0; k < 5; ++k)
+            for (int k = 0; k < (int)shape[2]; ++k)
             {
                 //cout << tensor_ptr[k + j * (5)+ i * 20] << ",";
-                cout << float(tensor_test2[i][j][k])  << ",";
+                cout << float(tensor_test2[j][k])  << ",";
             }
             cout << endl;
         }
         cout << endl;
-    }
-    cout << endl;
-#endif
+
 
     //float *tensor_ptr = (ndpp_memory::ScalarTypeToCppType<scalar_t>::type*)tensor_test.data();
 
@@ -106,38 +98,46 @@ int main()
     }
     cout << endl;
 
-    
-    /*double start_time_2 = omp_get_wtime();
+    Tensor test2 = tensor_test + tensor_test2 ;
+
+    Tensor tensor_test3 = 10 * tensor_test; 
+
+
+
+
+     cout << "test2:" << endl;
     for (int i = 0; i < 3; ++i)
     {
         for (int j = 0; j < 4; ++j)
         {
             for (int k = 0; k < 5; ++k)
             {
-                //cout << float() << endl;
-                int index = k + j * (5)+ i * 20;
-                tensor_ptr[index] = float(index);
+                //cout << tensor_ptr[k + j * (5)+ i * 20] << ",";
+                cout << float(test2[i][j][k])  << ",";
             }
+            cout << endl;
         }
-    }
-    double end_time_2 = omp_get_wtime();
-    cout << endl;*/
-
-    double elapsed_time_1 = end_time_1 - start_time_1;
-    //double elapsed_time_2 = end_time_2 - start_time_2;
-
-     cout << "elapsed_time_1: " << elapsed_time_1 << endl;
-     //cout << "elapsed_time_2: " << elapsed_time_2 << endl;
-
-
-    Tensor tensor_test22 = ndpp::full(66.0f, {6}, scalar_t, ndpp::Host);
-
-    for (int index = 0; index < 5; ++index)
-    {
-        cout << float(tensor_test22[index]) << ", ";
+        cout << endl;
     }
     cout << endl;
-   //} 
+
+
+    cout << "test3:" << int(tensor_test.scalar()) << endl;
+    cout << "test3's device: " << int(tensor_test3.device()) << endl;
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            for (int k = 0; k < 5; ++k)
+            {
+                //cout << tensor_ptr[k + j * (5)+ i * 20] << ",";
+                cout << float(tensor_test3[i][j][k])  << ",";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+    cout << endl;
 
     return 0;
 }

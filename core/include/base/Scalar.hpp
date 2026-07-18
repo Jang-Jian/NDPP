@@ -1,8 +1,10 @@
 #pragma once
 
 #include <include/base/ScalarType.hpp>
-
+#ifdef HALF
 #include <include/half/half.hpp>
+#endif
+
 
 namespace ndpp
 {

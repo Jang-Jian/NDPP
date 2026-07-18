@@ -3,19 +3,23 @@
 
 #include <cmath>
 #include <string>
+
 #include <cuda.h>
+#include <cublas_v2.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include <curand_kernel.h>
 #ifdef HALF
 #include <cuda_fp16.h>
 #endif
-//#include <cublas_v2.h>
-//
 
 #include <include/logging/Logging.hpp>
 
 using namespace std;
+
+
+// Used for decorating the host * device
+#define NDPP_DECORATE_HostDevice __host__ __device__ 
 
 
 namespace ndpp

@@ -46,7 +46,7 @@ inline Tensor onces(const SizeTArray &size, const ndpp_memory::ScalarType scalar
 }
 
 
-inline Tensor full(const Scalar fill_value, const SizeTArray &size, 
+inline Tensor full(const Scalar &fill_value, const SizeTArray &size, 
                    const ndpp_memory::ScalarType scalar_t, const ndpp_memory::DeviceType device_t)
 {
     Tensor _dst;

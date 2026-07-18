@@ -2,9 +2,9 @@
 VPATH=core/src/logging:core/src/array:core/src/base:core/src/tensor:core/src/algorithm:core/src/list
 
 # kernel.
-KERNEL_OBJS=Logging.o GenericBase.o ArrayStype.o ScalarType.o DataArch.o TensorBase.o Tensor.o Sort.o ListBase.o List.o ListHelper.o
+KERNEL_OBJS=Logging.o GenericBase.o ArrayStype.o ScalarType.o DataArch.o TensorBase.o Tensor.o TensorArithmeticFwd.o Sort.o ListBase.o List.o ListHelper.o
 ifeq ($(WITH_CUDA), 1)
-KERNEL_OBJS+=GpuDataProc.o
+KERNEL_OBJS+=GpuDataProc.o GpuTensorArithmeticFwd.o
 endif
 
 # example.

@@ -10,11 +10,6 @@ namespace ndpp_memory
 // DeviceType: Device(Memory) type.   
 enum class DeviceType;
 
-}; // namespace ndpp::ndpp_memory
-
-namespace ndpp_memory
-{
-
 
 enum class DeviceType
 {

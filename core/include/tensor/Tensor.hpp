@@ -1,17 +1,12 @@
 #pragma once
 
+#include <include/base/Scalar.hpp>
 #include <include/base/DataProc.hpp>
 #include <include/base/DataArch.hpp>
 #include <include/base/DeviceProc.hpp>
 #include <include/logging/Logging.hpp>
 #include <include/tensor/TensorBase.hpp>
-#ifdef HALF
-#include <include/half/half.hpp>
-#endif
-#ifdef CUDA
-#include <include/extension/CudaProc.hpp>
-#endif
-
+#include <include/tensor/TensorArithmetic.hpp>
 
 
 namespace ndpp
@@ -55,6 +50,61 @@ public:
     inline Tensor& operator=(const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float32>::type src);
     inline Tensor& operator=(const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type src);
     inline Tensor& operator=(const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type    src);
+
+
+    template<typename T>
+    inline Tensor& operator+=(const T       b); // Tensor += scalar(template).
+    inline Tensor& operator+=(const Scalar &b); // Tensor += Scalar.
+    inline Tensor& operator+=(const Tensor &b); // Tensor += Tensor.
+
+    template<typename T>
+    inline Tensor& operator-=(const T       b); // Tensor -= scalar(template).
+    inline Tensor& operator-=(const Scalar &b); // Tensor -= Scalar.
+    inline Tensor& operator-=(const Tensor &b); // Tensor -= Tensor.
+
+    template<typename T>
+    inline Tensor& operator*=(const T       b); // Tensor *= scalar(template).
+    inline Tensor& operator*=(const Scalar &b); // Tensor *= Scalar.
+    inline Tensor& operator*=(const Tensor &b); // Tensor *= Tensor.
+
+    template<typename T>
+    inline Tensor& operator/=(const T       b); // Tensor /= scalar(template).
+    inline Tensor& operator/=(const Scalar &b); // Tensor /= Scalar.
+    inline Tensor& operator/=(const Tensor &b); // Tensor /= Tensor.
+
+
+    template<typename T>
+    friend inline Tensor operator+(const Tensor &a, const T       b); // Tensor + scalar(template).
+    template<typename T>
+    friend inline Tensor operator+(const T       a, const Tensor &b); // scalar(template) + Tensor.
+    friend inline Tensor operator+(const Tensor &a, const Scalar &b); // Tensor + Scalar.
+    friend inline Tensor operator+(const Scalar &a, const Tensor &b); // Scalar + Tensor.
+    friend inline Tensor operator+(const Tensor &a, const Tensor &b); // Tensor + Tensor.
+
+
+    template<typename T>
+    friend inline Tensor operator-(const Tensor &a, const T       b); // Tensor - scalar(template).
+    template<typename T>
+    friend inline Tensor operator-(const T       a, const Tensor &b); // scalar(template) - Tensor.
+    friend inline Tensor operator-(const Tensor &a, const Scalar &b); // Tensor - Scalar.
+    friend inline Tensor operator-(const Scalar &a, const Tensor &b); // Scalar - Tensor.
+    friend inline Tensor operator-(const Tensor &a, const Tensor &b); // Tensor - Tensor.
+
+    template<typename T>
+    friend inline Tensor operator*(const Tensor &a, const T       b); // Tensor * scalar(template).
+    template<typename T>
+    friend inline Tensor operator*(const T       a, const Tensor &b); // scalar(template) * Tensor.
+    friend inline Tensor operator*(const Tensor &a, const Scalar &b); // Tensor * Scalar.
+    friend inline Tensor operator*(const Scalar &a, const Tensor &b); // Scalar * Tensor.
+    friend inline Tensor operator*(const Tensor &a, const Tensor &b); // Tensor * Tensor.
+
+    template<typename T>
+    friend inline Tensor operator/(const Tensor &a, const T       b); // Tensor / scalar(template).
+    template<typename T>
+    friend inline Tensor operator/(const T       a, const Tensor &b); // scalar(template) / Tensor.
+    friend inline Tensor operator/(const Tensor &a, const Scalar &b); // Tensor / Scalar.
+    friend inline Tensor operator/(const Scalar &a, const Tensor &b); // Scalar / Tensor.
+    friend inline Tensor operator/(const Tensor &a, const Tensor &b); // Tensor / Tensor.
 
 
     inline operator ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type()   const;
@@ -142,7 +192,7 @@ public:
     // P.S The stride will be calculated via shape, and the allocation will be moved to zerosV().
     inline void zerosB(const SizeTArray &shape, const ndpp_memory::ScalarType stype, 
                        const ndpp_memory::DeviceType dtype);
-                       
+
     // Deallocate the memory.
     inline void destory();
 
@@ -175,6 +225,295 @@ inline Tensor& Tensor::operator=(const Tensor &src)
 inline Tensor Tensor::operator[](int64_t index) const
 {
     return select(index);
+}
+
+template<typename T>
+inline Tensor& Tensor::operator+=(const T b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, Scalar(b), *this,
+                                       ndpp_arithmetic::Arithmetic::Add,
+                                       "template<typename T> Tensor::operator+=(const T b)");
+    return *this;
+}
+
+inline Tensor& Tensor::operator+=(const Scalar &b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, b, *this,
+                                       ndpp_arithmetic::Arithmetic::Add,
+                                       "Tensor::operator+=(const Scalar &b)");
+    return *this;
+}
+
+inline Tensor& Tensor::operator+=(const Tensor &b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, b, *this,
+                                       ndpp_arithmetic::Arithmetic::Add, 
+                                       "tTensor::operator+=(const Tensor &b)");
+    return *this;
+}
+
+template<typename T>
+inline Tensor& Tensor::operator-=(const T b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, Scalar(b), *this,
+                                       ndpp_arithmetic::Arithmetic::Subtract,
+                                       "template<typename T> Tensor::operator-=(const T b)");
+    return *this;
+}
+
+inline Tensor& Tensor::operator-=(const Scalar &b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, Scalar(b), *this,
+                                       ndpp_arithmetic::Arithmetic::Subtract,
+                                       "Tensor::operator-=(const Scalar &b)");
+    return *this;
+}
+
+inline Tensor& Tensor::operator-=(const Tensor &b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, b, *this,
+                                       ndpp_arithmetic::Arithmetic::Subtract,
+                                       "Tensor::operator-=(const Tensor &b)");
+    return *this;
+}
+
+template<typename T>
+inline Tensor& Tensor::operator*=(const T b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, Scalar(b), *this,
+                                       ndpp_arithmetic::Arithmetic::Multiply,
+                                       "template<typename T> Tensor::operator*=(const T b)");
+    return *this;
+}
+
+inline Tensor& Tensor::operator*=(const Scalar &b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, b, *this,
+                                       ndpp_arithmetic::Arithmetic::Multiply,
+                                       "Tensor::operator*=(const Scalar &b)");
+    return *this;
+}
+
+inline Tensor& Tensor::operator*=(const Tensor &b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, b, *this,
+                                       ndpp_arithmetic::Arithmetic::Multiply,
+                                       "Tensor::operator*=(const Tensor &b)");
+    return *this;
+}
+
+template<typename T>
+inline Tensor& Tensor::operator/=(const T b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, Scalar(b), *this,
+                                       ndpp_arithmetic::Arithmetic::Division,
+                                       "template<typename T> Tensor::operator/=(const T b)");
+    return *this;
+}
+
+inline Tensor& Tensor::operator/=(const Scalar &b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, b, *this,
+                                       ndpp_arithmetic::Arithmetic::Division,
+                                       "Tensor::operator/=(const Scalar &b)");
+    return *this;
+}
+
+inline Tensor& Tensor::operator/=(const Tensor &b)
+{
+    ndpp_arithmetic::arithmeticForward(*this, b, *this,
+                                       ndpp_arithmetic::Arithmetic::Division, 
+                                       "Tensor::operator/=(const Tensor &b)");
+    return *this;
+}
+
+template<typename T>
+inline Tensor operator+(const Tensor &a, const T b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, Scalar(b), c,
+                                       ndpp_arithmetic::Arithmetic::Add,
+                                       "template<typename T> operator+(const Tensor&, const T)");
+    return c;
+}
+
+template<typename T>
+inline Tensor operator+(const T a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(Scalar(a), b, c,
+                                       ndpp_arithmetic::Arithmetic::Add,
+                                       "template<typename T> operator+(const T, const Tensor&)");
+    return c;
+}
+
+inline Tensor operator+(const Tensor &a, const Scalar &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c,
+                                       ndpp_arithmetic::Arithmetic::Add, 
+                                       "operator+(const Tensor&, const Scalar &b)");
+    return c;
+}
+
+inline Tensor operator+(const Scalar &a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c,
+                                       ndpp_arithmetic::Arithmetic::Add,
+                                       "operator+(const Scalar&, const Tensor&)");
+    return c;
+}
+
+inline Tensor operator+(const Tensor &a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c, 
+                                       ndpp_arithmetic::Arithmetic::Add,
+                                       "operator+(const Tensor&, const Tensor&)");
+    return c;
+}
+
+template<typename T>
+inline Tensor operator-(const Tensor &a, const T b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, Scalar(b), c,
+                                       ndpp_arithmetic::Arithmetic::Subtract,
+                                       "template<typename T> operator-(const Tensor&, const T)");
+    return c;
+}
+
+template<typename T>
+inline Tensor operator-(const T a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(Scalar(a), b, c,
+                                       ndpp_arithmetic::Arithmetic::Subtract,
+                                       "template<typename T> operator-(const T, const Tensor&)");
+    return c;
+}
+
+inline Tensor operator-(const Tensor &a, const Scalar &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c,
+                                       ndpp_arithmetic::Arithmetic::Subtract, 
+                                       "operator-(const Tensor&, const Scalar &b)");
+    return c;
+}
+
+inline Tensor operator-(const Scalar &a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c,
+                                       ndpp_arithmetic::Arithmetic::Subtract, 
+                                       "operator-(const Scalar&, const Tensor&)");
+    return c;
+}
+
+
+inline Tensor operator-(const Tensor &a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c, 
+                                       ndpp_arithmetic::Arithmetic::Subtract,
+                                       "operator-(const Tensor&, const Tensor&)");
+    return c;
+}
+
+template<typename T>
+inline Tensor operator*(const Tensor &a, const T b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, Scalar(b), c,
+                                       ndpp_arithmetic::Arithmetic::Multiply,
+                                       "template<typename T> operator*(const Tensor&, const T)");
+    return c;
+}
+
+template<typename T>
+inline Tensor operator*(const T a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(Scalar(a), b, c,
+                                       ndpp_arithmetic::Arithmetic::Multiply,
+                                       "template<typename T> operator*(const T, const Tensor&)");
+    return c;
+}
+
+inline Tensor operator*(const Tensor &a, const Scalar &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c,
+                                       ndpp_arithmetic::Arithmetic::Multiply,
+                                       "operator*(const Tensor&, const Scalar&)");
+    return c;
+}
+
+inline Tensor operator*(const Scalar &a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c,
+                                       ndpp_arithmetic::Arithmetic::Multiply,
+                                       "operator*(const Scalar&, const Tensor&)");
+    return c;
+}
+
+inline Tensor operator*(const Tensor &a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c, 
+                                       ndpp_arithmetic::Arithmetic::Multiply,
+                                       "operator*(const Tensor&, const Tensor&)");
+    return c;
+}
+
+template<typename T>
+inline Tensor operator/(const Tensor &a, const T b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, Scalar(b), c,
+                                       ndpp_arithmetic::Arithmetic::Division,
+                                       "template<typename T> operator/(const Tensor&, const T)");
+    return c;
+}
+
+template<typename T>
+inline Tensor operator/(const T a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(Scalar(a), b, c,
+                                       ndpp_arithmetic::Arithmetic::Division,
+                                       "template<typename T> operator/(const T, const Tensor&)");
+    return c;
+}
+
+inline Tensor operator/(const Tensor &a, const Scalar &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c,
+                                       ndpp_arithmetic::Arithmetic::Division, 
+                                       "operator/(const Tensor&, const Scalar &b)");
+    return c;
+}
+
+inline Tensor operator/(const Scalar &a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c,
+                                       ndpp_arithmetic::Arithmetic::Division, 
+                                       "operator/(const Scalar&, const Tensor &b)");
+    return c;
+}
+
+inline Tensor operator/(const Tensor &a, const Tensor &b)
+{
+    Tensor c;
+    ndpp_arithmetic::arithmeticForward(a, b, c, 
+                                       ndpp_arithmetic::Arithmetic::Division,
+                                       "operator/(const Tensor&, const Tensor&)");
+    return c;
 }
 
 inline Tensor& Tensor::operator=(const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type src)
