@@ -1,8 +1,7 @@
 #pragma once
 
-#ifdef CUDA
-#include <include/extension/CudaProc.hpp>
-#endif
+#include <include/base/InlineProc.hpp>
+#include <include/base/ScalarType.hpp>
 #include <include/tensor/TensorArithmetic.hpp>
 
 
@@ -13,10 +12,7 @@ namespace ndpp_arithmetic
 {
 
 template<typename T1, typename T2>
-#ifdef CUDA
-NDPP_DECORATE_HostDevice
-#endif
-inline T1 arithmeticOp(const T1 src1, const T2 src2, const Arithmetic type)
+ndppInline T1 arithmeticOp(const T1 src1, const T2 src2, const Arithmetic type)
 {
     switch (type)
     {
@@ -35,10 +31,7 @@ inline T1 arithmeticOp(const T1 src1, const T2 src2, const Arithmetic type)
 
 
 template<typename T>
-#ifdef CUDA
-NDPP_DECORATE_HostDevice
-#endif
-inline bool arithmeticOp(const bool src1, const T src2, const Arithmetic type)
+ndppInline bool arithmeticOp(const bool src1, const T src2, const Arithmetic type)
 {
     switch (type)
     {
@@ -58,11 +51,8 @@ inline bool arithmeticOp(const bool src1, const T src2, const Arithmetic type)
 
 // arithmeticIndexing: Data indexing with multiple dimension for arithmetic.
 template<typename T>
-#ifdef CUDA
-NDPP_DECORATE_HostDevice
-#endif
-inline bool arithmeticIndexing(const T *src, const int64_t index, const int64_t src_size, const int64_t src_dim,
-                               const size_t *acutal_shape, const size_t *allocated_shape, T &dst)
+ndppInline bool arithmeticIndexing(const T *src, const int64_t index, const int64_t src_size, const int64_t src_dim,
+                                   const size_t *acutal_shape, const size_t *allocated_shape, T &dst)
 {
     if (src_size == 1)
     {

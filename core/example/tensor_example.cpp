@@ -100,7 +100,7 @@ int main()
 
     Tensor test2 = tensor_test + tensor_test2 ;
 
-    Tensor tensor_test3 = 10 * tensor_test; 
+    Tensor tensor_test3 = 10.0f * tensor_test; 
 
 
 

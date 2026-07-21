@@ -6,9 +6,7 @@
 #ifdef HALF
 #include <include/half/half.hpp>
 #endif
-#ifdef CUDA
-#include <include/extension/CudaProc.hpp>
-#endif
+#include <include/base/SizeProc.hpp>
 #include <include/base/DeviceProc.hpp>
 #include <include/logging/Logging.hpp>
 
@@ -43,10 +41,6 @@ std::string scalarTypeToCppStr(const ScalarType stype);
 
 // Convert std::string to ndpp_memory::ScalarType.
 ScalarType cppStrToScalarType(const std::string stype);
-
-// Get sizeof(T) * num.
-template<typename T>
-inline size_t sizeOf(const size_t num);
 
 // Access the pointer via ndpp::ndpp_memory::ScalarType & specific position.
 inline void* scalarPtrShift(const void *src, const ScalarType stype, const int64_t pos);
@@ -155,13 +149,6 @@ template<> struct CppTypeToScalarType<half_float::half> : std::integral_constant
 template<> struct CppTypeToScalarType<float>  : std::integral_constant<ScalarType, ScalarType::Float32> {};
 template<> struct CppTypeToScalarType<double> : std::integral_constant<ScalarType, ScalarType::Float64> {};
 template<> struct CppTypeToScalarType<bool>   : std::integral_constant<ScalarType, ScalarType::Bool>    {};
-
-
-template<typename T>
-inline size_t sizeOf(const size_t num)
-{
-    return num * sizeof(T);
-}
 
 
 inline void* scalarPtrShift(const void *src, const ScalarType stype, const int64_t pos)
@@ -274,13 +261,11 @@ inline T scalarPtrAccess(const void *src, const ScalarType stype, const DeviceTy
                 case ScalarType::Int64:
                     data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::Int64>::type*)scalarPtrShift(src, stype, pos));
                     break;
-
             #ifdef HALF
                 case ScalarType::Float16:
                     data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::Float16>::type*)scalarPtrShift(src, stype, pos));
                     break;
-            #endif
-                    
+            #endif                 
                 case ScalarType::Float32:
                     data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::Float32>::type*)scalarPtrShift(src, stype, pos));
                     break;
@@ -322,13 +307,11 @@ inline T scalarPtrAccess(const void *src, const ScalarType stype, const DeviceTy
                     case ScalarType::Int64:
                         data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Int64>::type*)src, stype, pos,file_name, method_name));
                         break;
-
                 #ifdef HALF
                     case ScalarType::Float16:
                         data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Float16>::type*)src, stype, pos,file_name, method_name));
                         break;
-                #endif
-                        
+                #endif                       
                     case ScalarType::Float32:
                         data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Float32>::type*)src, stype, pos,file_name, method_name));
                         break;

@@ -1,4 +1,6 @@
 obj/*
 lib/*
 exe/*
-ndpp/*.so
+*.o
+*.a
+*.so

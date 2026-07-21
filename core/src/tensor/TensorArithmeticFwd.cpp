@@ -72,22 +72,6 @@ static inline void compareDim(const Tensor &a, const Tensor &b,
             exit(EXIT_FAILURE);
         }
     }
-    else
-    {
-        if (!a.data())
-        {
-            ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::ERROR,
-                             "The tensor a is empty, and please allocate tensor a first", true);
-            exit(EXIT_FAILURE);
-        }
-
-        if (!b.data())
-        {
-            ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::ERROR,
-                             "The tensor b is empty, and please allocate tensor b first", true);
-            exit(EXIT_FAILURE);
-        }
-    }
 }
 
 
@@ -107,7 +91,7 @@ static inline int64_t loopTotal(const int64_t a_total, const int64_t b_total)
 }
 
 
-// cpuArithForwardKernel: Arithmetic forward.
+// cpuArithForwardKernel(OpenMP): Arithmetic forward.
 // P.S The arithmetic supports these operation:
 // - Calculating Tensor(a) {arithmetic} Tensor(b).
 // - Calculating Tensor(a) {arithmetic} Scalar(b).

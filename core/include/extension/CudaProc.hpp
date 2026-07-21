@@ -13,13 +13,10 @@
 #include <cuda_fp16.h>
 #endif
 
+#include <include/base/SizeProc.hpp>
 #include <include/logging/Logging.hpp>
 
 using namespace std;
-
-
-// Used for decorating the host * device
-#define NDPP_DECORATE_HostDevice __host__ __device__ 
 
 
 namespace ndpp
@@ -77,9 +74,9 @@ inline bool cudaErrorChecker(const cudaError_t status, const string &file_name, 
 
 
 // Memory allocation with different cuda's memory types.
-template<typename dtype>
-inline dtype* cudaMemoryAlloc(const size_t size, const CudaDeviceType cudevice_type, 
-                              const string &file_name, const string &method_name)
+template<typename T>
+inline T* cudaMemoryAlloc(const size_t size, const CudaDeviceType cudevice_type, 
+                          const string &file_name, const string &method_name)
 {
     if (size == 0)
     {
@@ -87,21 +84,21 @@ inline dtype* cudaMemoryAlloc(const size_t size, const CudaDeviceType cudevice_t
     }
 
     bool status = false;
-    dtype *dst_ptr = nullptr;
-    
+    T *dst_ptr = nullptr;
+
     switch (cudevice_type)
     {
     case CudaDeviceType::CudaDevice:
-        status = cudaErrorChecker(cudaMalloc((void**)&dst_ptr, sizeof(dtype) * size), file_name, method_name);
+        status = cudaErrorChecker(cudaMalloc((void**)&dst_ptr, sizeOf<T>(size)), file_name, method_name);
         break;
     case CudaDeviceType::CudaPinned:
-        status = cudaErrorChecker(cudaMallocHost((void**)&dst_ptr, sizeof(dtype) * size), file_name, method_name);
+        status = cudaErrorChecker(cudaMallocHost((void**)&dst_ptr, sizeOf<T>(size)), file_name, method_name);
         break;
     case CudaDeviceType::CudaUnified:
-        status = cudaErrorChecker(cudaMallocManaged((void**)&dst_ptr, sizeof(dtype) * size), file_name, method_name);
+        status = cudaErrorChecker(cudaMallocManaged((void**)&dst_ptr, sizeOf<T>(size)), file_name, method_name);
         break;
     case CudaDeviceType::CudaZeroCpy:
-        status = cudaErrorChecker(cudaHostAlloc((void**)&dst_ptr, sizeof(dtype) * size, cudaHostAllocMapped), file_name, method_name);
+        status = cudaErrorChecker(cudaHostAlloc((void**)&dst_ptr, sizeOf<T>(size), cudaHostAllocMapped), file_name, method_name);
         break;
     }
 
@@ -142,6 +139,7 @@ inline void cudaMemoryDeAlloc(void *src_ptr, const CudaDeviceType cudevice_type,
     @para
     - kind: cudaMemcpyHostToDevice, cudaMemcpyDeviceToHost, cudaMemcpyDeviceToDevice, cudaMemcpyHostToHost.
 */
+template<typename T>
 inline void cudaMemoryCopy(const void *src_ptr, void *dst_ptr, const cudaMemcpyKind kind, const size_t size,
                            const string &file_name, const string &method_name)
 {
@@ -154,7 +152,7 @@ inline void cudaMemoryCopy(const void *src_ptr, void *dst_ptr, const cudaMemcpyK
         return;
     }
 
-    cudaErrorChecker(cudaMemcpy(dst_ptr, src_ptr, size, kind), file_name, method_name);
+    cudaErrorChecker(cudaMemcpy(dst_ptr, src_ptr, sizeOf<T>(size), kind), file_name, method_name);
 }
 
 

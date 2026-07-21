@@ -19,7 +19,7 @@ inline Tensor onces(const SizeTArray &size, const ndpp_memory::ScalarType stype 
 
 // Creates a tensor of size size filled with fill_value. The tensor’s dtype is inferred from fill_value.
 // Reference: https://docs.pytorch.org/docs/2.12/generated/torch.full.html
-inline Tensor full(const Scalar fill_value, const SizeTArray &size, 
+inline Tensor full(const Scalar &fill_value, const SizeTArray &size, 
                    const ndpp_memory::ScalarType scalar_t, const ndpp_memory::DeviceType device_t);
 
 
