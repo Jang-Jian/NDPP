@@ -13,7 +13,8 @@ namespace ndpp_memory
 template<typename T>
 inline size_t sizeOf(const size_t num)
 {
-    return num * sizeof(T);
+    constexpr size_t data_size = sizeof(T);
+    return num * data_size;
 }
 
 };

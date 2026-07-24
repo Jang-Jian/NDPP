@@ -96,116 +96,121 @@ static inline int64_t loopTotal(const int64_t a_total, const int64_t b_total)
 // - Calculating Tensor(a) {arithmetic} Tensor(b).
 // - Calculating Tensor(a) {arithmetic} Scalar(b).
 // - Calculating Scalar(a) {arithmetic} Tensor(b).
-template<typename T1, typename T2>
-static inline void cpuArithForwardKernel(const T1 *a, const T2 *b, T1 *c,
-                                         const size_t *a_allocated_shape, const size_t *a_acutal_shape, const int64_t a_shape_dim, const int64_t a_total,
-                                         const size_t *b_allocated_shape, const size_t *b_acutal_shape, const int64_t b_shape_dim, const int64_t b_total,
-                                         const int64_t loop_total, const Arithmetic arith_type)
+template<typename Operator, typename T1, typename T2>
+static inline void cpuArithForwardImpleKernel(const T1* __restrict__ a, 
+                                              const T2* __restrict__ b, 
+                                              T1* __restrict__ c,
+                                              const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, 
+                                              int64_t a_shape_dim, int64_t a_total,
+                                              const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides, 
+                                              int64_t b_shape_dim, int64_t b_total,
+                                              int64_t loop_total)
 {
-    #pragma omp parallel for schedule(guided) num_threads(threadsReq(loop_total))
+    #pragma omp parallel for simd schedule(guided) num_threads(threadsReq(loop_total))
     for (int64_t index = 0; index < loop_total; ++index)
     {
-        T1 a_val = static_cast<T1>(0);
-        T2 b_val = static_cast<T2>(0);  
+        T1 a_val;
+        if (!arithmeticIndexingV2(a, index, a_total, a_shape_dim, 
+                                  a_acutal_shape, a_allocated_shape, a_strides, a_val))
+            continue;
 
-        const bool available_a = arithmeticIndexing(a, index, a_total, a_shape_dim, 
-                                                    a_acutal_shape, a_allocated_shape, a_val);
-        const bool available_b = arithmeticIndexing(b, index, b_total, b_shape_dim, 
-                                                    b_acutal_shape, b_allocated_shape, b_val);
-        if (available_a && available_b)
-        {
-            //cout << index << ", " << float(a_val) << ", " << float(b_val) << endl;
-            c[index] = arithmeticOp(a_val, b_val, arith_type);
-        }
+        T2 b_val;
+        if (!arithmeticIndexingV2(b, index, b_total, b_shape_dim, 
+                                  b_acutal_shape, b_allocated_shape, b_strides, b_val))
+            continue;
+
+        c[index] = Operator()(a_val, b_val);
     }
 }
 
 
 // cpuArithForwardBTypeImpleKernel: Deciding the data type for b.
-// P.S Wrapping for cpuArithForwardKernel() with different data type b.
-template<typename T>
+// P.S Wrapping for cpuArithForwardImpleKernel() with different data type b.
+template<typename Operator, typename T>
 static inline void cpuArithForwardBTypeImpleKernel(const T *a, const void *b, T *c, const ndpp_memory::ScalarType b_stype,
-                                                   const size_t *a_allocated_shape, const size_t *a_acutal_shape, const int64_t a_shape_dim, const int64_t a_total,
-                                                   const size_t *b_allocated_shape, const size_t *b_acutal_shape, const int64_t b_shape_dim, const int64_t b_total,
-                                                   const int64_t loop_total, const Arithmetic arith_type)
+                                                   const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, 
+                                                   int64_t a_shape_dim, int64_t a_total,
+                                                   const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides, 
+                                                   int64_t b_shape_dim, int64_t b_total, int64_t loop_total)
 {
     switch (b_stype)
     {
         case ndpp_memory::ScalarType::UInt8:  
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type*>(b), c,
-                                  a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                  b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                  loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator, T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::UInt16: 
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt16>::type*>(b), c,
-                                  a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                  b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                  loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator,T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt16>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt16>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::UInt32: 
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt32>::type*>(b), c,
-                                  a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                  b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                  loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator, T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt32>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt32>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::UInt64:
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt64>::type*>(b), c,
-                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                            loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator, T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt64>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt64>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::Int8:
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int8>::type*>(b), c,
-                                  a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                  b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                  loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator, T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int8>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int8>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::Int16:
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int16>::type*>(b), c,
-                                  a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                  b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                  loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator, T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int16>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int16>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, 
+                                  loop_total);
             break;
         case ndpp_memory::ScalarType::Int32:
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int32>::type*>(b), c,
-                                  a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                  b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                  loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator, T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int32>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int32>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::Int64:
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int64>::type*>(b), c,
-                                  a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                  b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                  loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator, T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int64>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int64>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
 
     #ifdef HALF
         case ndpp_memory::ScalarType::Float16:
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float16>::type*>(b), c,
-                                  a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                  b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                  loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator, T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float16>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float16>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
     #endif
             
         case ndpp_memory::ScalarType::Float32:
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float32>::type*>(b), c,
-                                  a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                  b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                  loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator, T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float32>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float32>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::Float64:
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type*>(b), c,
-                                  a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                  b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                  loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator, T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::Bool:
-            cpuArithForwardKernel(a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type*>(b), c,
-                                  a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                  b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                  loop_total, arith_type);
+            cpuArithForwardImpleKernel<Operator, T, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type>(
+                                  a, static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type*>(b), c,
+                                  a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                  b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
     }
 }
@@ -213,104 +218,143 @@ static inline void cpuArithForwardBTypeImpleKernel(const T *a, const void *b, T 
 
 // cpuArithForwardACTypeImpleKernel: Deciding the data type for a & c.
 // P.S Wrapping for cpuArithForwardBTypeImpleKernel() with different data type a & c.
+template<typename Operator>
 static inline void cpuArithForwardACTypeImpleKernel(const void *a, const void *b, void *c, const ndpp_memory::ScalarType a_stype, const ndpp_memory::ScalarType b_stype,
-                                                    const size_t *a_allocated_shape, const size_t *a_acutal_shape, const int64_t a_shape_dim, const int64_t a_total,
-                                                    const size_t *b_allocated_shape, const size_t *b_acutal_shape, const int64_t b_shape_dim, const int64_t b_total,
-                                                    const int64_t loop_total, const Arithmetic arith_type)
+                                                    const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, 
+                                                    int64_t a_shape_dim, int64_t a_total,
+                                                    const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides, 
+                                                    int64_t b_shape_dim, int64_t b_total, int64_t loop_total)
 {
     switch (a_stype)
     {
         case ndpp_memory::ScalarType::UInt8:  
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type>(
+                                            static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::UInt16: 
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt16>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt16>::type>(
+                static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt16>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt16>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::UInt32: 
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt32>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt32>::type>(
+                                            static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt32>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt32>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::UInt64:
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt64>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt64>::type>(
+                                            static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt64>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt64>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::Int8:
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int8>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int8>::type>(
+                                            static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int8>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int8>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::Int16:
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int16>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int16>::type>(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int16>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int16>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::Int32:
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int32>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int32>::type>(
+                                            static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int32>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int32>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::Int64:
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int64>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int64>::type>(
+                                            static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int64>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Int64>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
 
     #ifdef HALF
         case ndpp_memory::ScalarType::Float16:
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float16>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float16>::type>(
+                                            static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float16>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float16>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
     #endif
             
         case ndpp_memory::ScalarType::Float32:
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float32>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float32>::type>(
+                                            static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float32>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float32>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, loop_total);
             break;
         case ndpp_memory::ScalarType::Float64:
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type>(
+                                            static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, 
+                                            loop_total);
             break;
         case ndpp_memory::ScalarType::Bool:
-            cpuArithForwardBTypeImpleKernel(static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type*>(a), 
+            cpuArithForwardBTypeImpleKernel<Operator, ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type>(
+                                            static_cast<const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type*>(a), 
                                             b, static_cast<ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type*>(c), b_stype,
-                                            a_allocated_shape, a_acutal_shape, a_shape_dim, a_total,
-                                            b_allocated_shape, b_acutal_shape, b_shape_dim, b_total, 
-                                            loop_total, arith_type);
+                                            a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                            b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total, 
+                                            loop_total);
             break;
     }
 }
 
+
+static inline void cpuArithForwardKernel(const void *a, const void *b, void *c, const ndpp_memory::ScalarType a_stype, const ndpp_memory::ScalarType b_stype,
+                                         const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, 
+                                         int64_t a_shape_dim, int64_t a_total,
+                                         const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides, 
+                                         int64_t b_shape_dim, int64_t b_total,
+                                         int64_t loop_total, Arithmetic arith_type)
+{
+    switch (arith_type)
+    {
+    case Arithmetic::Add:
+        cpuArithForwardACTypeImpleKernel<AddOp>(a, b, c, a_stype,b_stype,
+                                                a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                                b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total,
+                                                loop_total);
+        break;
+    case Arithmetic::Subtract:
+        cpuArithForwardACTypeImpleKernel<SubOp>(a, b, c, a_stype,b_stype,
+                                                a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                                b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total,
+                                                loop_total);
+        break;
+    case Arithmetic::Multiply:
+        cpuArithForwardACTypeImpleKernel<MulOp>(a, b, c, a_stype,b_stype,
+                                                a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                                b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total,
+                                                loop_total);
+        break;
+    case Arithmetic::Division:
+        cpuArithForwardACTypeImpleKernel<DivOp>(a, b, c, a_stype,b_stype,
+                                                a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                                b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total,
+                                                loop_total);
+        break;
+    }
+}
 
 void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
                        const Arithmetic arith_type, const string &operator_name)
@@ -331,6 +375,8 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
 
     const SizeTArray a_acutal_shape = a.sizes();
     const SizeTArray b_acutal_shape = b.sizes();
+    const SizeTArray a_strides = a.strides();
+    const SizeTArray b_strides = b.strides();
 
     const int64_t a_dim = static_cast<int64_t>(a_acutal_shape.size());
     const int64_t b_dim = static_cast<int64_t>(b_acutal_shape.size());
@@ -346,11 +392,11 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
     {
         if (a_total >= b_total)
         {
-            c.zerosV(a_acutal_shape, a.strides(), a_stype, a_dtype);
+            c.zerosV(a_acutal_shape, a_strides, a_stype, a_dtype);
         }
         else
         {
-            c.zerosV(b_acutal_shape, b.strides(), a_stype, a_dtype);
+            c.zerosV(b_acutal_shape, b_strides, a_stype, a_dtype);
         }
     }
 
@@ -380,9 +426,9 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
 
     
     SizeTArray a_allocated_shape, b_allocated_shape;
-    ndpp_data_arch::calcShape(a_acutal_shape, a.strides(), a_allocated_shape, a_acutal_shape.device(), 
+    ndpp_data_arch::calcShape(a_acutal_shape, a_strides, a_allocated_shape, a_acutal_shape.device(), 
                               "TensorOperator.cpp", operator_name);
-    ndpp_data_arch::calcShape(b_acutal_shape, b.strides(), b_allocated_shape, a_acutal_shape.device(), 
+    ndpp_data_arch::calcShape(b_acutal_shape, b_strides, b_allocated_shape, a_acutal_shape.device(), 
                               "TensorOperator.cpp", operator_name);
                               
 #ifdef CUDA
@@ -402,10 +448,10 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
                     case ndpp_memory::DeviceType::CudaUnified:
                     case ndpp_memory::DeviceType::CudaZeroCpy: 
                         {
-                            cpuArithForwardACTypeImpleKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
-                                                             a_allocated_shape.data(), a_acutal_shape.data(), a_dim, a_total,
-                                                             b_allocated_shape.data(), b_acutal_shape.data(), b_dim, b_total,
-                                                             loop_total, arith_type);
+                            cpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
+                                                  a_allocated_shape.data(), a_acutal_shape.data(), a_strides.data(), a_dim, a_total,
+                                                  b_allocated_shape.data(), b_acutal_shape.data(), b_strides.data(), b_dim, b_total,
+                                                  loop_total, arith_type);
                         }
                         break;
                     
@@ -414,10 +460,10 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
                             Tensor _b;
                             _b.copy(b, ndpp_memory::DeviceType::Host);
 
-                            cpuArithForwardACTypeImpleKernel(a.data(), _b.data(), c.data(), a_stype, b_stype,
-                                                             a_allocated_shape.data(), a_acutal_shape.data(), a_dim, a_total,
-                                                             b_allocated_shape.data(), b_acutal_shape.data(), b_dim, b_total,
-                                                             loop_total, arith_type);
+                            cpuArithForwardKernel(a.data(), _b.data(), c.data(), a_stype, b_stype,
+                                                  a_allocated_shape.data(), a_acutal_shape.data(), a_strides.data(), a_dim, a_total,
+                                                  b_allocated_shape.data(), b_acutal_shape.data(), b_strides.data(), b_dim, b_total,
+                                                  loop_total, arith_type);
                         }
                         break;
                 }
@@ -443,11 +489,15 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
                             const size_t *b_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(_b.sizes().data(), 
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
+                            const size_t *a_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
+                                                                                     "TensorArithmeticFwd.cpp", operator_name));
+                            const size_t *b_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(_b.strides().data(), 
+                                                                                     "TensorArithmeticFwd.cpp", operator_name));
 
-                            gpuArithForwardACTypeImpleKernel(a.data(), _b.data(), c.data(), a_stype, b_stype,
-                                                             a_allocated_shape_dev, a_acutal_shape_dev, a_dim, a_total,
-                                                             b_allocated_shape_dev, b_acutal_shape_dev, b_dim, b_total,
-                                                             loop_total, arith_type);
+                            gpuArithForwardKernel(a.data(), _b.data(), c.data(), a_stype, b_stype,
+                                                  a_allocated_shape_dev, a_acutal_shape_dev, a_strides_dev, a_dim, a_total,
+                                                  b_allocated_shape_dev, b_acutal_shape_dev, b_strides_dev, b_dim, b_total,
+                                                  loop_total, arith_type);
                         }
                         break;
 
@@ -462,11 +512,15 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
                             const size_t *b_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_acutal_shape.data(), 
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
-
-                            gpuArithForwardACTypeImpleKernel(a.data(), b_dev, c.data(), a_stype, b_stype,
-                                                             a_allocated_shape_dev, a_acutal_shape_dev, a_dim, a_total,
-                                                             b_allocated_shape_dev, b_acutal_shape_dev, b_dim, b_total,
-                                                             loop_total, arith_type);
+                            const size_t *a_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
+                                                                                     "TensorArithmeticFwd.cpp", operator_name));
+                            const size_t *b_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_strides.data(), 
+                                                                                     "TensorArithmeticFwd.cpp", operator_name));
+                                                                                     
+                            gpuArithForwardKernel(a.data(), b_dev, c.data(), a_stype, b_stype,
+                                                  a_allocated_shape_dev, a_acutal_shape_dev, a_strides_dev, a_dim, a_total,
+                                                  b_allocated_shape_dev, b_acutal_shape_dev, b_strides_dev, b_dim, b_total,
+                                                  loop_total, arith_type);
                         }   
                         break; 
                     
@@ -480,11 +534,15 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
                             const size_t *b_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_acutal_shape.data(), 
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
+                            const size_t *a_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
+                                                                                     "TensorArithmeticFwd.cpp", operator_name));
+                            const size_t *b_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_strides.data(), 
+                                                                                     "TensorArithmeticFwd.cpp", operator_name));
 
-                            gpuArithForwardACTypeImpleKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
-                                                             a_allocated_shape_dev, a_acutal_shape_dev, a_dim, a_total,
-                                                             b_allocated_shape_dev, b_acutal_shape_dev, b_dim, b_total,
-                                                             loop_total, arith_type);
+                            gpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
+                                                  a_allocated_shape_dev, a_acutal_shape_dev, a_strides_dev, a_dim, a_total,
+                                                  b_allocated_shape_dev, b_acutal_shape_dev, b_strides_dev, b_dim, b_total,
+                                                  loop_total, arith_type);
                         }
                         break;
                 }
@@ -493,10 +551,10 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
     }
 #else
     // P.S cpu calculation only.
-    cpuArithForwardACTypeImpleKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
-                                     a_allocated_shape.data(), a_acutal_shape.data(), a_dim, a_total,
-                                     b_allocated_shape.data(), b_acutal_shape.data(), b_dim, b_total,
-                                     loop_total, arith_type);
+    cpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
+                          a_allocated_shape.data(), a_acutal_shape.data(), a_strides.data(), a_dim, a_total,
+                          b_allocated_shape.data(), b_acutal_shape.data(), b_strides.data(), b_dim, b_total,
+                          loop_total, arith_type);
 #endif
 }
 
@@ -513,6 +571,7 @@ void arithmeticForward(const Tensor &a, const Scalar &b, Tensor &c,
 
     
     const SizeTArray a_acutal_shape = a.sizes();
+    const SizeTArray a_strides = a.strides();
 
     const int64_t a_total = static_cast<int64_t>(a.allocations());
 
@@ -523,11 +582,11 @@ void arithmeticForward(const Tensor &a, const Scalar &b, Tensor &c,
 
     if (!same(a.sizes(), c.sizes()) || a_dtype != c.device() || a_stype != c.scalar())
     {
-        c.zerosV(a_acutal_shape, a.strides(), a_stype, a_dtype);
+        c.zerosV(a_acutal_shape, a_strides, a_stype, a_dtype);
     }
 
     SizeTArray a_allocated_shape;
-    ndpp_data_arch::calcShape(a_acutal_shape, a.strides(), a_allocated_shape, a_acutal_shape.device(), 
+    ndpp_data_arch::calcShape(a_acutal_shape, a_strides, a_allocated_shape, a_acutal_shape.device(), 
                               "TensorOperator.cpp", operator_name);
 
 #ifdef CUDA
@@ -538,9 +597,9 @@ void arithmeticForward(const Tensor &a, const Scalar &b, Tensor &c,
         case ndpp_memory::DeviceType::CudaUnified:
         case ndpp_memory::DeviceType::CudaZeroCpy: 
             {
-                cpuArithForwardACTypeImpleKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
-                                                 a_allocated_shape.data(), a_acutal_shape.data(), a_acutal_shape.size(), a_total,
-                                                 nullptr, nullptr, 0, 1, a_total, arith_type);
+                cpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
+                                      a_allocated_shape.data(), a_acutal_shape.data(), a_strides.data(), a_acutal_shape.size(), a_total,
+                                      nullptr, nullptr, nullptr, 0, 1, a_total, arith_type);
             } 
             break;
         
@@ -550,18 +609,20 @@ void arithmeticForward(const Tensor &a, const Scalar &b, Tensor &c,
                                                                                  "TensorArithmeticFwd.cpp", operator_name));           
                 const size_t *a_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_acutal_shape.data(), 
                                                                               "TensorArithmeticFwd.cpp", operator_name));
+                const size_t *a_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
+                                                                         "TensorArithmeticFwd.cpp", operator_name));
 
-                gpuArithForwardACTypeImpleKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
-                                                 a_allocated_shape_dev, a_acutal_shape_dev, a_acutal_shape.size(), a_total,
-                                                 nullptr, nullptr, 0, 1, a_total, arith_type);
+                gpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
+                                      a_allocated_shape_dev, a_acutal_shape_dev, a_strides_dev, a_acutal_shape.size(), a_total,
+                                      nullptr, nullptr, nullptr, 0, 1, a_total, arith_type);
             }
             break; 
     }
 #else
     // P.S cpu calculation only.
-    cpuArithForwardACTypeImpleKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
-                                     a_allocated_shape.data(), a_acutal_shape.data(), a_acutal_shape.size(), a_total,
-                                     nullptr, nullptr, 0, 1, a_total, arith_type);
+    cpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
+                          a_allocated_shape.data(), a_acutal_shape.data(), a_strides.data(), a_acutal_shape.size(), a_total,
+                          nullptr, nullptr, nullptr, 0, 1, a_total, arith_type);
 #endif
 }
 
@@ -577,6 +638,7 @@ void arithmeticForward(const Scalar &a, const Tensor &b, Tensor &c,
     }
 
     const SizeTArray b_acutal_shape = b.sizes();
+    const SizeTArray b_strides = b.strides();
 
     const int64_t b_total = static_cast<int64_t>(b.allocations());
 
@@ -587,11 +649,11 @@ void arithmeticForward(const Scalar &a, const Tensor &b, Tensor &c,
 
     if (!same(b.sizes(), c.sizes()) || b_dtype != c.device() || a_stype != c.scalar())
     {
-        c.zerosV(b_acutal_shape, b.strides(), a_stype, b_dtype);
+        c.zerosV(b_acutal_shape, b_strides, a_stype, b_dtype);
     }
 
     SizeTArray b_allocated_shape;
-    ndpp_data_arch::calcShape(b_acutal_shape, b.strides(), b_allocated_shape, b_acutal_shape.device(), 
+    ndpp_data_arch::calcShape(b_acutal_shape, b_strides, b_allocated_shape, b_acutal_shape.device(), 
                               "TensorOperator.cpp", operator_name);
 
 #ifdef CUDA
@@ -602,10 +664,10 @@ void arithmeticForward(const Scalar &a, const Tensor &b, Tensor &c,
         case ndpp_memory::DeviceType::CudaUnified:
         case ndpp_memory::DeviceType::CudaZeroCpy: 
             {
-                cpuArithForwardACTypeImpleKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
-                                                 nullptr, nullptr, 0, 1,
-                                                 b_allocated_shape.data(), b_acutal_shape.data(), b_acutal_shape.size(), b_total,
-                                                 b_total, arith_type);
+                cpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
+                                      nullptr, nullptr, nullptr, 0, 1,
+                                      b_allocated_shape.data(), b_acutal_shape.data(), b_strides.data(), b_acutal_shape.size(), b_total,
+                                      b_total, arith_type);
             } 
             break;
         
@@ -615,20 +677,22 @@ void arithmeticForward(const Scalar &a, const Tensor &b, Tensor &c,
                                                                                  "TensorArithmeticFwd.cpp", operator_name));
                 const size_t *b_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_acutal_shape.data(), 
                                                                               "TensorArithmeticFwd.cpp", operator_name));
+                const size_t *b_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_strides.data(), 
+                                                                              "TensorArithmeticFwd.cpp", operator_name));
 
-                gpuArithForwardACTypeImpleKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
-                                                 nullptr, nullptr, 0, 1,
-                                                 b_allocated_shape_dev, b_acutal_shape_dev, b_acutal_shape.size(), b_total,
-                                                 b_total, arith_type);
+                gpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
+                                      nullptr, nullptr, nullptr, 0, 1,
+                                      b_allocated_shape_dev, b_acutal_shape_dev, b_strides_dev, b_acutal_shape.size(), b_total,
+                                      b_total, arith_type);
             }
             break; 
     }
 #else
     // P.S cpu calculation only.
-    cpuArithForwardACTypeImpleKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
-                                     nullptr, nullptr, 0, 1,
-                                     b_allocated_shape.data(), b_acutal_shape.data(), b_acutal_shape.size(), b_total,
-                                     b_total, arith_type);
+    cpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
+                          nullptr, nullptr, nullptr, 0, 1,
+                          b_allocated_shape.data(), b_acutal_shape.data(), b_strides.data(), b_acutal_shape.size(), b_total,
+                          b_total, arith_type);
 #endif
 }
 

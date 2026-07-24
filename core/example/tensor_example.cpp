@@ -8,7 +8,7 @@ using namespace ndpp;
 
 #ifdef CUDA
 #define device_id_t 1
-#define device_t ndpp::CudaZeroCpy
+#define device_t ndpp::CudaDevice
 #else
 #define device_t ndpp::Host
 #endif
