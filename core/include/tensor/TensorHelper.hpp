@@ -9,22 +9,22 @@ namespace ndpp
 
 // Returns a tensor filled with the scalar value 0, with the shape defined by the variable argument.
 // Reference: https://docs.pytorch.org/docs/2.12/generated/torch.zeros.html
-inline Tensor zeros(const SizeTArray &size, const ndpp_memory::ScalarType stype = ndpp_memory::ScalarType::Float32,
+inline Tensor zeros(const IntArray &size, const ndpp_memory::ScalarType stype = ndpp_memory::ScalarType::Float32,
                     const ndpp_memory::DeviceType dtype = ndpp_memory::DeviceType::Host);
 
 // Returns a tensor filled with the scalar value 1, with the shape defined by the variable argument.
 // Reference: https://docs.pytorch.org/docs/2.12/generated/torch.ones.html
-inline Tensor onces(const SizeTArray &size, const ndpp_memory::ScalarType stype = ndpp_memory::ScalarType::Float32,
+inline Tensor onces(const IntArray &size, const ndpp_memory::ScalarType stype = ndpp_memory::ScalarType::Float32,
                     const ndpp_memory::DeviceType dtype = ndpp_memory::DeviceType::Host);
 
 // Creates a tensor of size size filled with fill_value. The tensor’s dtype is inferred from fill_value.
 // Reference: https://docs.pytorch.org/docs/2.12/generated/torch.full.html
-inline Tensor full(const Scalar &fill_value, const SizeTArray &size, 
+inline Tensor full(const Scalar &fill_value, const IntArray &size, 
                    const ndpp_memory::ScalarType scalar_t, const ndpp_memory::DeviceType device_t);
 
 
 
-inline Tensor zeros(const SizeTArray &size, const ndpp_memory::ScalarType scalar_t,
+inline Tensor zeros(const IntArray &size, const ndpp_memory::ScalarType scalar_t,
                     const ndpp_memory::DeviceType device_t)
 {
     Tensor _dst;
@@ -33,7 +33,7 @@ inline Tensor zeros(const SizeTArray &size, const ndpp_memory::ScalarType scalar
 }
 
 
-inline Tensor onces(const SizeTArray &size, const ndpp_memory::ScalarType scalar_t,
+inline Tensor onces(const IntArray &size, const ndpp_memory::ScalarType scalar_t,
                     const ndpp_memory::DeviceType device_t)
 {
     Tensor _dst;
@@ -46,7 +46,7 @@ inline Tensor onces(const SizeTArray &size, const ndpp_memory::ScalarType scalar
 }
 
 
-inline Tensor full(const Scalar &fill_value, const SizeTArray &size, 
+inline Tensor full(const Scalar &fill_value, const IntArray &size, 
                    const ndpp_memory::ScalarType scalar_t, const ndpp_memory::DeviceType device_t)
 {
     Tensor _dst;

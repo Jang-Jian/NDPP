@@ -4,7 +4,7 @@
 namespace ndpp
 {
 
-bool same(const ndpp::SizeTArray &src1, const ndpp::SizeTArray &src2)
+bool same(const IntArray &src1, const IntArray &src2)
 {
     size_t src1_size = src1.size();
     size_t src2_size = src2.size();
@@ -75,7 +75,7 @@ bool same(const ndpp::SizeTArray &src1, const ndpp::SizeTArray &src2)
     }
     else
     {
-        for (size_t index = 0; index < 6; ++index) 
+        for (size_t index = 0; index < src1_size; ++index) 
         {
             if (src1[index] != src2[index])
             {

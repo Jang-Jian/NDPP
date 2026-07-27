@@ -3,6 +3,7 @@
 #include <include/base/InlineProc.hpp>
 #include <include/base/ScalarType.hpp>
 #include <include/base/SizeProc.hpp>
+#include <include/base/BasicType.hpp>
 #include <include/tensor/TensorArithmetic.hpp>
 
 
@@ -87,7 +88,7 @@ ndppInline bool arithmeticOp(const bool lhs, const T rhs, const Arithmetic type)
 // arithmeticIndexing(V1): Data indexing with multiple dimension for arithmetic.
 template<typename T>
 ndppInline bool arithmeticIndexing(const T *src, const int64_t index, const int64_t src_size, const int64_t src_dim,
-                                   const size_t *acutal_shape, const size_t *allocated_shape, T &dst)
+                                   const Integer *acutal_shape, const Integer *allocated_shape, T &dst)
 {
     if (src_size == 1)
     {
@@ -139,9 +140,9 @@ ndppInline bool arithmeticIndexingV2(const T* __restrict__ src,
                                      int64_t index, 
                                      int64_t src_size,
                                      int64_t src_dim,
-                                     const size_t* __restrict__ actual_shape, 
-                                     const size_t* __restrict__ allocated_shape, 
-                                     const size_t* __restrict__ strides, 
+                                     const Integer* __restrict__ actual_shape, 
+                                     const Integer* __restrict__ allocated_shape, 
+                                     const Integer* __restrict__ strides, 
                                      T &dst)
 {
     if (src_size == 1)

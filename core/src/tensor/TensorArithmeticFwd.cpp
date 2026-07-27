@@ -16,7 +16,7 @@ namespace ndpp
 namespace ndpp_arithmetic
 {
 
-static inline std::string shapeStr(const SizeTArray &shape)
+static inline std::string shapeStr(const IntArray &shape)
 {
     std::string shape_str = "[";
 
@@ -42,8 +42,8 @@ static inline void compareDim(const Tensor &a, const Tensor &b,
     int issue_dim = -1;
     int issue_a_size = -1, issue_b_size = -1;
 
-    const SizeTArray a_shape = a.sizes();
-    const SizeTArray b_shape = b.sizes();
+    const IntArray a_shape = a.sizes();
+    const IntArray b_shape = b.sizes();
     const size_t a_dim = a_shape.size();
     const size_t b_dim = b_shape.size();
 
@@ -100,9 +100,9 @@ template<typename Operator, typename T1, typename T2>
 static inline void cpuArithForwardImpleKernel(const T1* __restrict__ a, 
                                               const T2* __restrict__ b, 
                                               T1* __restrict__ c,
-                                              const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, 
+                                              const Integer *a_allocated_shape, const Integer *a_acutal_shape, const Integer *a_strides, 
                                               int64_t a_shape_dim, int64_t a_total,
-                                              const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides, 
+                                              const Integer *b_allocated_shape, const Integer *b_acutal_shape, const Integer *b_strides, 
                                               int64_t b_shape_dim, int64_t b_total,
                                               int64_t loop_total)
 {
@@ -128,9 +128,9 @@ static inline void cpuArithForwardImpleKernel(const T1* __restrict__ a,
 // P.S Wrapping for cpuArithForwardImpleKernel() with different data type b.
 template<typename Operator, typename T>
 static inline void cpuArithForwardBTypeImpleKernel(const T *a, const void *b, T *c, const ndpp_memory::ScalarType b_stype,
-                                                   const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, 
+                                                   const Integer *a_allocated_shape, const Integer *a_acutal_shape, const Integer *a_strides, 
                                                    int64_t a_shape_dim, int64_t a_total,
-                                                   const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides, 
+                                                   const Integer *b_allocated_shape, const Integer *b_acutal_shape, const Integer *b_strides, 
                                                    int64_t b_shape_dim, int64_t b_total, int64_t loop_total)
 {
     switch (b_stype)
@@ -220,9 +220,9 @@ static inline void cpuArithForwardBTypeImpleKernel(const T *a, const void *b, T 
 // P.S Wrapping for cpuArithForwardBTypeImpleKernel() with different data type a & c.
 template<typename Operator>
 static inline void cpuArithForwardACTypeImpleKernel(const void *a, const void *b, void *c, const ndpp_memory::ScalarType a_stype, const ndpp_memory::ScalarType b_stype,
-                                                    const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, 
+                                                    const Integer *a_allocated_shape, const Integer *a_acutal_shape, const Integer *a_strides, 
                                                     int64_t a_shape_dim, int64_t a_total,
-                                                    const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides, 
+                                                    const Integer *b_allocated_shape, const Integer *b_acutal_shape, const Integer *b_strides, 
                                                     int64_t b_shape_dim, int64_t b_total, int64_t loop_total)
 {
     switch (a_stype)
@@ -321,9 +321,9 @@ static inline void cpuArithForwardACTypeImpleKernel(const void *a, const void *b
 
 
 static inline void cpuArithForwardKernel(const void *a, const void *b, void *c, const ndpp_memory::ScalarType a_stype, const ndpp_memory::ScalarType b_stype,
-                                         const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, 
+                                         const Integer *a_allocated_shape, const Integer *a_acutal_shape, const Integer *a_strides, 
                                          int64_t a_shape_dim, int64_t a_total,
-                                         const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides, 
+                                         const Integer *b_allocated_shape, const Integer *b_acutal_shape, const Integer *b_strides, 
                                          int64_t b_shape_dim, int64_t b_total,
                                          int64_t loop_total, Arithmetic arith_type)
 {
@@ -373,10 +373,10 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
         exit(EXIT_FAILURE);
     }
 
-    const SizeTArray a_acutal_shape = a.sizes();
-    const SizeTArray b_acutal_shape = b.sizes();
-    const SizeTArray a_strides = a.strides();
-    const SizeTArray b_strides = b.strides();
+    const IntArray a_acutal_shape = a.sizes();
+    const IntArray b_acutal_shape = b.sizes();
+    const IntArray a_strides = a.strides();
+    const IntArray b_strides = b.strides();
 
     const int64_t a_dim = static_cast<int64_t>(a_acutal_shape.size());
     const int64_t b_dim = static_cast<int64_t>(b_acutal_shape.size());
@@ -425,7 +425,7 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
     }
 
     
-    SizeTArray a_allocated_shape, b_allocated_shape;
+    IntArray a_allocated_shape, b_allocated_shape;
     ndpp_data_arch::calcShape(a_acutal_shape, a_strides, a_allocated_shape, a_acutal_shape.device(), 
                               "TensorOperator.cpp", operator_name);
     ndpp_data_arch::calcShape(b_acutal_shape, b_strides, b_allocated_shape, a_acutal_shape.device(), 
@@ -481,17 +481,17 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
                             Tensor _b;
                             _b.copy(b, ndpp_memory::DeviceType::CudaDevice);
                             
-                            const size_t *a_allocated_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_allocated_shape.data(), 
+                            const Integer *a_allocated_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_allocated_shape.data(), 
                                                                                              "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *b_allocated_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_allocated_shape.data(), 
+                            const Integer *b_allocated_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_allocated_shape.data(), 
                                                                                              "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *a_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_acutal_shape.data(), 
+                            const Integer *a_acutal_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_acutal_shape.data(), 
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *b_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(_b.sizes().data(), 
+                            const Integer *b_acutal_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(_b.sizes().data(), 
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *a_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
+                            const Integer *a_strides_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
                                                                                      "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *b_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(_b.strides().data(), 
+                            const Integer *b_strides_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(_b.strides().data(), 
                                                                                      "TensorArithmeticFwd.cpp", operator_name));
 
                             gpuArithForwardKernel(a.data(), _b.data(), c.data(), a_stype, b_stype,
@@ -504,17 +504,17 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
                     case ndpp_memory::DeviceType::CudaZeroCpy: 
                         {
                             const void *b_dev = ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b.data(), "TensorArithmeticFwd.cpp", operator_name);
-                            const size_t *a_allocated_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_allocated_shape.data(), 
+                            const Integer *a_allocated_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_allocated_shape.data(), 
                                                                                              "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *b_allocated_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_allocated_shape.data(), 
+                            const Integer *b_allocated_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_allocated_shape.data(), 
                                                                                              "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *a_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_acutal_shape.data(), 
+                            const Integer *a_acutal_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_acutal_shape.data(), 
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *b_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_acutal_shape.data(), 
+                            const Integer *b_acutal_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_acutal_shape.data(), 
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *a_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
+                            const Integer *a_strides_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
                                                                                      "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *b_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_strides.data(), 
+                            const Integer *b_strides_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_strides.data(), 
                                                                                      "TensorArithmeticFwd.cpp", operator_name));
                                                                                      
                             gpuArithForwardKernel(a.data(), b_dev, c.data(), a_stype, b_stype,
@@ -526,17 +526,17 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
                     
                     case ndpp_memory::DeviceType::CudaDevice:
                         {
-                            const size_t *a_allocated_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_allocated_shape.data(), 
+                            const Integer *a_allocated_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_allocated_shape.data(), 
                                                                                              "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *b_allocated_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_allocated_shape.data(), 
+                            const Integer *b_allocated_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_allocated_shape.data(), 
                                                                                              "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *a_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_acutal_shape.data(), 
+                            const Integer *a_acutal_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_acutal_shape.data(), 
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *b_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_acutal_shape.data(), 
+                            const Integer *b_acutal_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_acutal_shape.data(), 
                                                                                           "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *a_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
+                            const Integer *a_strides_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
                                                                                      "TensorArithmeticFwd.cpp", operator_name));
-                            const size_t *b_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_strides.data(), 
+                            const Integer *b_strides_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_strides.data(), 
                                                                                      "TensorArithmeticFwd.cpp", operator_name));
 
                             gpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
@@ -570,8 +570,8 @@ void arithmeticForward(const Tensor &a, const Scalar &b, Tensor &c,
     }
 
     
-    const SizeTArray a_acutal_shape = a.sizes();
-    const SizeTArray a_strides = a.strides();
+    const IntArray a_acutal_shape = a.sizes();
+    const IntArray a_strides = a.strides();
 
     const int64_t a_total = static_cast<int64_t>(a.allocations());
 
@@ -585,7 +585,7 @@ void arithmeticForward(const Tensor &a, const Scalar &b, Tensor &c,
         c.zerosV(a_acutal_shape, a_strides, a_stype, a_dtype);
     }
 
-    SizeTArray a_allocated_shape;
+    IntArray a_allocated_shape;
     ndpp_data_arch::calcShape(a_acutal_shape, a_strides, a_allocated_shape, a_acutal_shape.device(), 
                               "TensorOperator.cpp", operator_name);
 
@@ -605,11 +605,11 @@ void arithmeticForward(const Tensor &a, const Scalar &b, Tensor &c,
         
         case ndpp_memory::DeviceType::CudaDevice:  
             {
-                const size_t *a_allocated_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_allocated_shape.data(), 
+                const Integer *a_allocated_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_allocated_shape.data(), 
                                                                                  "TensorArithmeticFwd.cpp", operator_name));           
-                const size_t *a_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_acutal_shape.data(), 
+                const Integer *a_acutal_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_acutal_shape.data(), 
                                                                               "TensorArithmeticFwd.cpp", operator_name));
-                const size_t *a_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
+                const Integer *a_strides_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(a_strides.data(), 
                                                                          "TensorArithmeticFwd.cpp", operator_name));
 
                 gpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
@@ -637,8 +637,8 @@ void arithmeticForward(const Scalar &a, const Tensor &b, Tensor &c,
         exit(EXIT_FAILURE);
     }
 
-    const SizeTArray b_acutal_shape = b.sizes();
-    const SizeTArray b_strides = b.strides();
+    const IntArray b_acutal_shape = b.sizes();
+    const IntArray b_strides = b.strides();
 
     const int64_t b_total = static_cast<int64_t>(b.allocations());
 
@@ -652,7 +652,7 @@ void arithmeticForward(const Scalar &a, const Tensor &b, Tensor &c,
         c.zerosV(b_acutal_shape, b_strides, a_stype, b_dtype);
     }
 
-    SizeTArray b_allocated_shape;
+    IntArray b_allocated_shape;
     ndpp_data_arch::calcShape(b_acutal_shape, b_strides, b_allocated_shape, b_acutal_shape.device(), 
                               "TensorOperator.cpp", operator_name);
 
@@ -673,11 +673,11 @@ void arithmeticForward(const Scalar &a, const Tensor &b, Tensor &c,
         
         case ndpp_memory::DeviceType::CudaDevice:  
             {
-                const size_t *b_allocated_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_allocated_shape.data(), 
+                const Integer *b_allocated_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_allocated_shape.data(), 
                                                                                  "TensorArithmeticFwd.cpp", operator_name));
-                const size_t *b_acutal_shape_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_acutal_shape.data(), 
+                const Integer *b_acutal_shape_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_acutal_shape.data(), 
                                                                               "TensorArithmeticFwd.cpp", operator_name));
-                const size_t *b_strides_dev = static_cast<const size_t*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_strides.data(), 
+                const Integer *b_strides_dev = static_cast<const Integer*>(ndpp_memory::ndpp_cuda::cudaHostGetGpuPointer(b_strides.data(), 
                                                                               "TensorArithmeticFwd.cpp", operator_name));
 
                 gpuArithForwardKernel(a.data(), b.data(), c.data(), a_stype, b_stype,
@@ -696,6 +696,6 @@ void arithmeticForward(const Scalar &a, const Tensor &b, Tensor &c,
 #endif
 }
 
-} // namespace ndpp_arithmetic
+} // namespace ndpp::ndpp_arithmetic
 
 }; // namespace ndpp

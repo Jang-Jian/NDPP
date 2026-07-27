@@ -4,6 +4,12 @@
 #include <include/tensor/TensorBase.hpp>
 
 
+namespace ndpp
+{
+
+namespace ndpp_tensor_base
+{
+
 // Get Info's ndpp_memory::DeviceType via data's ndpp_memory::DeviceType.
 static inline ndpp::ndpp_memory::DeviceType getInfoTyByDataTy(const ndpp::ndpp_memory::DeviceType data_dtype)
 {
@@ -25,12 +31,6 @@ static inline ndpp::ndpp_memory::DeviceType getInfoTyByDataTy(const ndpp::ndpp_m
 }
 
 
-namespace ndpp
-{
-
-namespace ndpp_tensor_base
-{
-
 TensorDevice::TensorDevice()
 {
     DeviceReset();
@@ -38,7 +38,7 @@ TensorDevice::TensorDevice()
 
 TensorDevice::TensorDevice(TensorDevice &&src)
 {
-    DeviceMigrate((void**)&src._data, (size_t**)&src._shape, (size_t**)&src._strides, 
+    DeviceMigrate((void**)&src._data, (Integer**)&src._shape, (Integer**)&src._strides, 
                   src._dim, src._stype, src._data_dtype, src._info_dtype, src._dstatus,
                   "TensorBase.cpp", "TensorDevice::TensorDevice(TensorDevice&&");
 }
@@ -69,14 +69,14 @@ TensorDevice::~TensorDevice()
     DeviceDeAlloc("TensorDevice.cpp", "TensorDevice<T>::~TensorDevice()");
 }
 
-void TensorDevice::DeviceAlloc(const SizeTArray &shape, const SizeTArray &strides,
+void TensorDevice::DeviceAlloc(const IntArray &shape, const IntArray &strides,
                                const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype,
                                const string &file_name, const string &method_name)
 {
     DeviceDeAlloc(file_name, method_name);
 
     // Get actual shape & strides.
-    SizeTArray _act_shape, _act_strides;
+    IntArray _act_shape, _act_strides;
     ndpp_data_arch::calcShape(shape, strides, _act_shape, ndpp_memory::DeviceType::Host,
                               file_name, method_name);
     ndpp_data_arch::calcStrides(_act_shape, stype, _act_strides, ndpp_memory::DeviceType::Host,
@@ -98,10 +98,10 @@ void TensorDevice::DeviceAlloc(const SizeTArray &shape, const SizeTArray &stride
         this->_info_dtype = getInfoTyByDataTy(this->_data_dtype);
 
         this->_dim = shape.size();
-        this->_shape = ndpp_memory::mixMemoryAlloc<size_t>(this->_dim, this->_info_dtype, 
-                                                        file_name, method_name);
-        this->_strides = ndpp_memory::mixMemoryAlloc<size_t>(this->_dim, this->_info_dtype, 
+        this->_shape = ndpp_memory::mixMemoryAlloc<Integer>(this->_dim, this->_info_dtype, 
                                                             file_name, method_name);
+        this->_strides = ndpp_memory::mixMemoryAlloc<Integer>(this->_dim, this->_info_dtype, 
+                                                              file_name, method_name);
 
         ndpp_memory::mixMemoryCopy(shape.data(), shape.device(),
                                    this->_shape, this->_info_dtype, this->_dim,
@@ -121,9 +121,17 @@ void TensorDevice::DeviceAlloc(const SizeTArray &shape, const SizeTArray &stride
     // Alloacate '_data'.
     this->_data = ndpp_memory::mixScalarAlloc(_act_size, this->_stype, this->_data_dtype, 
                                               file_name, method_name);
-
-    // Assign '_dstatus'(ndpp::ndpp_memory::DeviceStatus).
-    this->_dstatus = ndpp_memory::DeviceStatus::Allocation;
+    if (this->_data)
+    {
+        // Assign '_dstatus'(ndpp::ndpp_memory::DeviceStatus).
+        this->_dstatus = ndpp_memory::DeviceStatus::Allocation;
+    }
+    else
+    {
+        DeviceDeAlloc(file_name, method_name);
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::WARN, 
+                         "Due to nullptr of this->_data allocation, it has destoryed other releated buffers (this->_shape & this->_strides).", true);
+    }
 }
 
 void TensorDevice::DeviceReset()
@@ -141,19 +149,17 @@ void TensorDevice::DeviceReset()
 
 void TensorDevice::DeviceDeAlloc(const string &file_name, const string &method_name)
 {
-    ndpp_memory::mixMemoryDeAlloc(this->_shape, this->_info_dtype, file_name, method_name);
-    ndpp_memory::mixMemoryDeAlloc(this->_strides, this->_info_dtype, file_name, method_name);
-
-    if (this->_data && this->_dim > 0 && 
-        this->_dstatus == ndpp_memory::DeviceStatus::Allocation)
+    if (this->_dstatus == ndpp_memory::DeviceStatus::Allocation)
     {
         ndpp_memory::mixScalarDeAlloc(this->_data, this->_stype, this->_data_dtype, file_name, method_name);
+        ndpp_memory::mixMemoryDeAlloc(this->_shape, this->_info_dtype, file_name, method_name);
+        ndpp_memory::mixMemoryDeAlloc(this->_strides, this->_info_dtype, file_name, method_name);
     }
     
     DeviceReset();
 }
 
-void TensorDevice::DeviceRefer(void *data, const SizeTArray &shape, const SizeTArray &strides, 
+void TensorDevice::DeviceRefer(void *data, const IntArray &shape, const IntArray &strides, 
                                const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype,
                                const string &file_name, const string &method_name)
 {
@@ -163,6 +169,22 @@ void TensorDevice::DeviceRefer(void *data, const SizeTArray &shape, const SizeTA
     }
 
     DeviceDeAlloc(file_name, method_name);
+
+    ndpp_memory::DeviceType _expect_dtype = getInfoTyByDataTy(dtype);
+
+    if (shape.data() && _expect_dtype != shape.device())
+    {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::WARN, 
+                         "The shape's DeviceType differs from expectation. It won't reference.", true);
+        return;
+    }
+
+    if (strides.data() &&  _expect_dtype != strides.device())
+    {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::WARN, 
+                         "The strides's DeviceType differs from expectation. It won't reference.", true);
+        return;
+    }
 
     size_t shape_dim = shape.size();
     size_t strides_dim = strides.size();
@@ -175,24 +197,31 @@ void TensorDevice::DeviceRefer(void *data, const SizeTArray &shape, const SizeTA
         this->_stype = stype; 
         this->_data_dtype = dtype;
         this->_dstatus = ndpp_memory::DeviceStatus::Reference;
+        this->_info_dtype = _expect_dtype;
+        
 
-        this->_info_dtype = getInfoTyByDataTy(this->_data_dtype);
-
-        this->_shape = ndpp_memory::mixMemoryAlloc<size_t>(this->_dim, this->_info_dtype, 
-                                                           file_name, method_name);
-        this->_strides = ndpp_memory::mixMemoryAlloc<size_t>(this->_dim, this->_info_dtype, 
-                                                            file_name, method_name);                                                    
+        this->_shape = shape.data();
+        this->_strides = strides.data();
+        /*this->_shape = ndpp_memory::mixMemoryAlloc<Integer>(this->_dim, this->_info_dtype, 
+                                                            file_name, method_name);
+        this->_strides = ndpp_memory::mixMemoryAlloc<Integer>(this->_dim, this->_info_dtype, 
+                                                              file_name, method_name);                                                    
 
         ndpp_memory::mixMemoryCopy(shape.data(), shape.device(),
                                    this->_shape, this->_info_dtype, this->_dim,
                                    file_name, method_name);    
         ndpp_memory::mixMemoryCopy(strides.data(), strides.device(),
                                    this->_strides, this->_info_dtype, this->_dim,
-                                   file_name, method_name);
-    }   
+                                   file_name, method_name);*/
+    }
+    else
+    {
+         ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::WARN, 
+                          "The shape's dim differs from strides's dim. It won't reference.", true);
+    }
 }
 
-void TensorDevice::DeviceMigrate(void **data, size_t **shape, size_t **strides, size_t &dim,
+void TensorDevice::DeviceMigrate(void **data, Integer **shape, Integer **strides, size_t &dim,
                                  ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, ndpp_memory::DeviceType &info_dtype, 
                                  ndpp_memory::DeviceStatus &dstatus, const string &file_name, const string &method_name)
 {
@@ -235,7 +264,7 @@ void TensorDevice::DeviceMigrate(void **data, size_t **shape, size_t **strides, 
 void TensorDevice::DeviceCopy(const void *data, const ndpp_memory::ScalarType src_stype, 
                               const ndpp_memory::DeviceType src_dtype, 
                               const ndpp_memory::DeviceType dst_dtype, 
-                              const SizeTArray &shape, const SizeTArray &strides, 
+                              const IntArray &shape, const IntArray &strides, 
                               const string &file_name, const string &method_name)
 {
     DeviceDeAlloc(file_name, method_name);
@@ -262,10 +291,10 @@ void TensorDevice::DeviceCopy(const void *data, const ndpp_memory::ScalarType sr
 
         this->_data = ndpp_memory::mixScalarAlloc(_act_size, this->_stype, this->_data_dtype, 
                                                   file_name, method_name);
-        this->_shape = ndpp_memory::mixMemoryAlloc<size_t>(this->_dim, this->_info_dtype, 
-                                                           file_name, method_name);
-        this->_strides = ndpp_memory::mixMemoryAlloc<size_t>(this->_dim, this->_info_dtype, 
+        this->_shape = ndpp_memory::mixMemoryAlloc<Integer>(this->_dim, this->_info_dtype, 
                                                             file_name, method_name);
+        this->_strides = ndpp_memory::mixMemoryAlloc<Integer>(this->_dim, this->_info_dtype, 
+                                                              file_name, method_name);
 
         ndpp_memory::mixScalarCopy(data, src_dtype, 
                                    this->_data, this->_data_dtype, this->_stype, _act_size,

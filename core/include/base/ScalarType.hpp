@@ -4,7 +4,7 @@
 #include <iostream>
 
 #ifdef HALF
-#include <include/half/half.hpp>
+#include <include/half/Float16.hpp>
 #endif
 #include <include/base/SizeProc.hpp>
 #include <include/base/DeviceProc.hpp>
@@ -71,28 +71,28 @@ namespace ndpp_memory
 enum class ScalarType
 {
     // unsigned integer: 8-bits.
-    UInt8  = 0,
+    UInt8   = 0,
 
     // unsigned integer: 16-bits.
-    UInt16 = 1,
+    UInt16  = 1,
 
     // unsigned integer: 32-bits.
-    UInt32 = 2,
+    UInt32  = 2,
 
     // unsigned integer: 64-bits.
-    UInt64 = 3,
+    UInt64  = 3,
 
     // integer: 8-bits.
-    Int8 = 4,
+    Int8    = 4,
 
     // integer: 16-bits.
-    Int16 = 5,
+    Int16   = 5,
 
     // integer: 32-bits.
-    Int32 = 6,
+    Int32   = 6,
 
     // integer: 64-bits.
-    Int64 = 7,
+    Int64   = 7,
 
 #ifdef HALF
     // float(half): 16-bits.
@@ -106,49 +106,40 @@ enum class ScalarType
     Float64 = 10,
 
     // boolean: 64-bits.
-    Bool = 11
+    Bool    = 11
 };
 
 
-template<> struct ScalarTypeToCppType<ScalarType::UInt8>   { using type = uint8_t;  static type t;         };
-template<> struct ScalarTypeToCppType<ScalarType::UInt16>  { using type = uint16_t; static type t;         };
-template<> struct ScalarTypeToCppType<ScalarType::UInt32>  { using type = uint32_t; static type t;         };
-template<> struct ScalarTypeToCppType<ScalarType::UInt64>  { using type = uint64_t; static type t;         };
-template<> struct ScalarTypeToCppType<ScalarType::Int8>    { using type = int8_t;   static type t;         };
-template<> struct ScalarTypeToCppType<ScalarType::Int16>   { using type = int16_t;  static type t;         };
-template<> struct ScalarTypeToCppType<ScalarType::Int32>   { using type = int32_t;  static type t;         };
-template<> struct ScalarTypeToCppType<ScalarType::Int64>   { using type = int64_t;  static type t;         };
+template<> struct ScalarTypeToCppType<ScalarType::UInt8>   { using type = uint8_t;          static type t; };
+template<> struct ScalarTypeToCppType<ScalarType::UInt16>  { using type = uint16_t;         static type t; };
+template<> struct ScalarTypeToCppType<ScalarType::UInt32>  { using type = uint32_t;         static type t; };
+template<> struct ScalarTypeToCppType<ScalarType::UInt64>  { using type = uint64_t;         static type t; };
+template<> struct ScalarTypeToCppType<ScalarType::Int8>    { using type = int8_t;           static type t; };
+template<> struct ScalarTypeToCppType<ScalarType::Int16>   { using type = int16_t;          static type t; };
+template<> struct ScalarTypeToCppType<ScalarType::Int32>   { using type = int32_t;          static type t; };
+template<> struct ScalarTypeToCppType<ScalarType::Int64>   { using type = int64_t;          static type t; };
 #ifdef HALF
-#ifdef CUDA
-template<> struct ScalarTypeToCppType<ScalarType::Float16> { using type = __half;           static type t; };
-#else
-template<> struct ScalarTypeToCppType<ScalarType::Float16> { using type = half_float::half; static type t; };
+template<> struct ScalarTypeToCppType<ScalarType::Float16> { using type = ndpp::float16_t;  static type t; };
 #endif
-#endif
-template<> struct ScalarTypeToCppType<ScalarType::Float32> { using type = float;   static type t;          };
-template<> struct ScalarTypeToCppType<ScalarType::Float64> { using type = double;  static type t;          };
-template<> struct ScalarTypeToCppType<ScalarType::Bool>    { using type = bool;    static type t;          };
+template<> struct ScalarTypeToCppType<ScalarType::Float32> { using type = float;            static type t; };
+template<> struct ScalarTypeToCppType<ScalarType::Float64> { using type = double;           static type t; };
+template<> struct ScalarTypeToCppType<ScalarType::Bool>    { using type = bool;             static type t; };
 
 
-template<> struct CppTypeToScalarType<uint8_t>  : std::integral_constant<ScalarType, ScalarType::UInt8>  {};
-template<> struct CppTypeToScalarType<uint16_t> : std::integral_constant<ScalarType, ScalarType::UInt16> {};
-template<> struct CppTypeToScalarType<uint32_t> : std::integral_constant<ScalarType, ScalarType::UInt32> {};
-template<> struct CppTypeToScalarType<uint64_t> : std::integral_constant<ScalarType, ScalarType::UInt64> {};
-template<> struct CppTypeToScalarType<int8_t>   : std::integral_constant<ScalarType, ScalarType::Int8>   {};
-template<> struct CppTypeToScalarType<int16_t>  : std::integral_constant<ScalarType, ScalarType::Int16>  {};
-template<> struct CppTypeToScalarType<int32_t>  : std::integral_constant<ScalarType, ScalarType::Int32>  {};
-template<> struct CppTypeToScalarType<int64_t>  : std::integral_constant<ScalarType, ScalarType::Int64>  {};
+template<> struct CppTypeToScalarType<uint8_t>         : std::integral_constant<ScalarType, ScalarType::UInt8>   {};
+template<> struct CppTypeToScalarType<uint16_t>        : std::integral_constant<ScalarType, ScalarType::UInt16>  {};
+template<> struct CppTypeToScalarType<uint32_t>        : std::integral_constant<ScalarType, ScalarType::UInt32>  {};
+template<> struct CppTypeToScalarType<uint64_t>        : std::integral_constant<ScalarType, ScalarType::UInt64>  {};
+template<> struct CppTypeToScalarType<int8_t>          : std::integral_constant<ScalarType, ScalarType::Int8>    {};
+template<> struct CppTypeToScalarType<int16_t>         : std::integral_constant<ScalarType, ScalarType::Int16>   {};
+template<> struct CppTypeToScalarType<int32_t>         : std::integral_constant<ScalarType, ScalarType::Int32>   {};
+template<> struct CppTypeToScalarType<int64_t>         : std::integral_constant<ScalarType, ScalarType::Int64>   {};
 #ifdef HALF
-#ifdef CUDA
-template<> struct CppTypeToScalarType<__half>           : std::integral_constant<ScalarType, ScalarType::Float16> {};
-template<> struct CppTypeToScalarType<half_float::half> : std::integral_constant<ScalarType, ScalarType::Float16> {};
-#else
-template<> struct CppTypeToScalarType<half_float::half> : std::integral_constant<ScalarType, ScalarType::Float16> {};
+template<> struct CppTypeToScalarType<ndpp::float16_t> : std::integral_constant<ScalarType, ScalarType::Float16> {};
 #endif
-#endif
-template<> struct CppTypeToScalarType<float>  : std::integral_constant<ScalarType, ScalarType::Float32> {};
-template<> struct CppTypeToScalarType<double> : std::integral_constant<ScalarType, ScalarType::Float64> {};
-template<> struct CppTypeToScalarType<bool>   : std::integral_constant<ScalarType, ScalarType::Bool>    {};
+template<> struct CppTypeToScalarType<float>           : std::integral_constant<ScalarType, ScalarType::Float32> {};
+template<> struct CppTypeToScalarType<double>          : std::integral_constant<ScalarType, ScalarType::Float64> {};
+template<> struct CppTypeToScalarType<bool>            : std::integral_constant<ScalarType, ScalarType::Bool>    {};
 
 
 inline void* scalarPtrShift(const void *src, const ScalarType stype, const int64_t pos)

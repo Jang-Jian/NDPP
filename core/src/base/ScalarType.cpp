@@ -44,12 +44,10 @@ std::string scalarTypeToCppStr(const ScalarType stype)
             return std::string(_Int32Str);
         case ScalarType::Int64:
             return std::string(_Int64Str);
-
     #ifdef HALF
         case ScalarType::Float16:
             return std::string(_Float16Str);
     #endif
-            
         case ScalarType::Float32:
             return std::string(_Float32Str);
         case ScalarType::Float64:

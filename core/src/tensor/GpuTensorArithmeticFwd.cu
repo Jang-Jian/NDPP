@@ -16,9 +16,9 @@ namespace ndpp_arithmetic
 // - Calculating Scalar(a) {arithmetic} Tensor(b).
 template<typename Operator, typename T1, typename T2>
 __global__ void gpuArithForwardImpleKernel(const T1 *a, const T2 *b, T1 *c,
-                                           const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, 
+                                           const Integer *a_allocated_shape, const Integer *a_acutal_shape, const Integer *a_strides, 
                                            const int64_t a_shape_dim, const int64_t a_total,
-                                           const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides, 
+                                           const Integer *b_allocated_shape, const Integer *b_acutal_shape, const Integer *b_strides, 
                                            const int64_t b_shape_dim, const int64_t b_total, const int64_t loop_total)
 {
     const int64_t index = (blockIdx.x + blockIdx.y * gridDim.x) * blockDim.x + threadIdx.x;
@@ -44,9 +44,9 @@ __global__ void gpuArithForwardImpleKernel(const T1 *a, const T2 *b, T1 *c,
 // P.S Wrapping for gpuArithForwardImpleKernel() with different data type b.
 template<typename Operator, typename T>
 static inline void gpuArithForwardBTypeImpleKernel(const T *a, const void *b, T *c, const ndpp_memory::ScalarType b_stype,
-                                                   const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, 
+                                                   const Integer *a_allocated_shape, const Integer *a_acutal_shape, const Integer *a_strides, 
                                                    const int64_t a_shape_dim, const int64_t a_total,
-                                                   const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides,
+                                                   const Integer *b_allocated_shape, const Integer *b_acutal_shape, const Integer *b_strides,
                                                    const int64_t b_shape_dim, const int64_t b_total, const int64_t loop_total)
 {
     constexpr size_t arith_block_thread_t = 512;
@@ -138,9 +138,9 @@ static inline void gpuArithForwardBTypeImpleKernel(const T *a, const void *b, T 
 // P.S Wrapping for gpuArithForwardBTypeImpleKernel() with different data type a & c.
 template<typename Operator>
 void gpuArithForwardACTypeImpleKernel(const void *a, const void *b, void *c, const ndpp_memory::ScalarType a_stype, const ndpp_memory::ScalarType b_stype,
-                                      const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, 
+                                      const Integer *a_allocated_shape, const Integer *a_acutal_shape, const Integer *a_strides, 
                                       const int64_t a_shape_dim, const int64_t a_total,
-                                      const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides, 
+                                      const Integer *b_allocated_shape, const Integer *b_acutal_shape, const Integer *b_strides, 
                                       const int64_t b_shape_dim, const int64_t b_total, const int64_t loop_total)
 {
     switch (a_stype)
@@ -224,8 +224,8 @@ void gpuArithForwardACTypeImpleKernel(const void *a, const void *b, void *c, con
 
 
 void gpuArithForwardKernel(const void *a, const void *b, void *c, const ndpp_memory::ScalarType a_stype, const ndpp_memory::ScalarType b_stype,
-                           const size_t *a_allocated_shape, const size_t *a_acutal_shape, const size_t *a_strides, int64_t a_shape_dim, int64_t a_total,
-                           const size_t *b_allocated_shape, const size_t *b_acutal_shape, const size_t *b_strides, int64_t b_shape_dim, int64_t b_total,
+                           const Integer *a_allocated_shape, const Integer *a_acutal_shape, const Integer *a_strides, int64_t a_shape_dim, int64_t a_total,
+                           const Integer *b_allocated_shape, const Integer *b_acutal_shape, const Integer *b_strides, int64_t b_shape_dim, int64_t b_total,
                            int64_t loop_total, Arithmetic arith_type)
 {
     switch (arith_type)

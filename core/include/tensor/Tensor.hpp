@@ -138,10 +138,10 @@ public:
     inline size_t allocations() const;
     
     // Get the shape.
-    inline SizeTArray sizes() const; 
+    inline IntArray sizes() const; 
 
     // Get the strides.
-    inline SizeTArray strides() const; 
+    inline IntArray strides() const; 
 
     // Get the ndpp_memory::ScalarType (data type).
     inline ndpp_memory::ScalarType scalar() const;
@@ -165,7 +165,7 @@ public:
     Tensor select(int64_t row_index) const;
 
     // Reference the data from other via pointer.
-    inline void refer(void *data, const SizeTArray &shape, const SizeTArray &strides, 
+    inline void refer(void *data, const IntArray &shape, const IntArray &strides, 
                       const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype);
 
     // Reference the data from other via ndpp::Tensor.
@@ -173,24 +173,24 @@ public:
 
     // Migrate from data pointers (data, shape & strides).
     // P.S It will reset all pointers which comes from input to nullptr after pointer migration.
-    inline void migrate(void **data, size_t **shape, size_t **strides, size_t &dim,
+    inline void migrate(void **data, Integer **shape, Integer **strides, size_t &dim,
                         ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, 
                         ndpp_memory::DeviceType &info_dtype, ndpp_memory::DeviceStatus &dstatus);
 
     // Migrate from data pointers (data, shape & strides).
     // P.S It will reset all pointers which comes from input to nullptr after pointer migration.
-    inline void migrate(void **data, SizeTArray &shape, SizeTArray &strides,
+    inline void migrate(void **data, IntArray &shape, IntArray &strides,
                         ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, 
                         ndpp_memory::DeviceStatus &dstatus);                    
     
     // Allocate the memory with shape, strides, different ndpp_memory::ScalarType & different ndpp_memory::DeviceType.
-    inline void zerosV(const SizeTArray &shape, const SizeTArray &strides,
+    inline void zerosV(const IntArray &shape, const IntArray &strides,
                        const ndpp_memory::ScalarType stype, 
                        const ndpp_memory::DeviceType dtype);
     
     // Allocate the memory with shape, different ndpp_memory::ScalarType & different ndpp_memory::DeviceType.
     // P.S The stride will be calculated via shape, and the allocation will be moved to zerosV().
-    inline void zerosB(const SizeTArray &shape, const ndpp_memory::ScalarType stype, 
+    inline void zerosB(const IntArray &shape, const ndpp_memory::ScalarType stype, 
                        const ndpp_memory::DeviceType dtype);
 
     // Deallocate the memory.
@@ -689,12 +689,12 @@ inline size_t Tensor::allocations() const
                                          "Tensor.hpp", "Tensor::allocations()");
 }
 
-inline SizeTArray Tensor::sizes() const
+inline IntArray Tensor::sizes() const
 {
     return DeviceShape();
 }
 
-inline SizeTArray Tensor::strides() const
+inline IntArray Tensor::strides() const
 {
     return DeviceStrides();
 }
@@ -730,11 +730,11 @@ inline Tensor Tensor::clone(const ndpp_memory::DeviceType dtype) const
     return _dst;
 }
 
-inline void Tensor::refer(void *data, const SizeTArray &shape, const SizeTArray &strides, 
+inline void Tensor::refer(void *data, const IntArray &shape, const IntArray &strides, 
                           const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype)
 {
     DeviceRefer(data, shape, strides, stype, dtype,
-                "Tensor.hpp", "Tensor::zerosV()");
+                "Tensor.hpp", "Tensor::refer(void*, const IntArray&, const IntArray&, const ndpp_memory::ScalarType, const ndpp_memory::DeviceType)");
 }                          
 
 inline void Tensor::refer(const Tensor &src)
@@ -746,51 +746,51 @@ inline void Tensor::refer(const Tensor &src)
     }
 }
 
-inline void Tensor::migrate(void **data, size_t **shape, size_t **strides, size_t &dim,
+inline void Tensor::migrate(void **data, Integer **shape, Integer **strides, size_t &dim,
                             ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, 
                             ndpp_memory::DeviceType &info_dtype, ndpp_memory::DeviceStatus &dstatus)
 {
     DeviceMigrate(data, shape, strides, dim,
                   stype, data_dtype, info_dtype, dstatus, 
-                  "Tensor.hpp", "Tensor::migrate(size_t**)");
+                  "Tensor.hpp", "Tensor::migrate(Integer**)");
 }
 
-inline void Tensor::migrate(void **data, SizeTArray &shape, SizeTArray &strides,
+inline void Tensor::migrate(void **data, IntArray &shape, IntArray &strides,
                             ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, 
                             ndpp_memory::DeviceStatus &dstatus)
 {
     if (shape.size() != strides.size())
     {
-        ndpp_log::logger("Tensor.hpp", "Tensor::migrate(SizeTArray&)", ndpp_log::RuntimeType::WARN, 
+        ndpp_log::logger("Tensor.hpp", "Tensor::migrate(IntArray&)", ndpp_log::RuntimeType::WARN, 
                          "shape.size() differs from strides.size().", true);
         return;
     }
     if (shape.device() != strides.device())
     {
-        ndpp_log::logger("Tensor.hpp", "Tensor::migrate(SizeTArray&)", ndpp_log::RuntimeType::WARN, 
+        ndpp_log::logger("Tensor.hpp", "Tensor::migrate(IntArray&)", ndpp_log::RuntimeType::WARN, 
                          "shape.device() differs from strides.device().", true);
         return;
     }
     if (shape.status() != strides.status())
     {
-        ndpp_log::logger("Tensor.hpp", "Tensor::migrate(SizeTArray&)", ndpp_log::RuntimeType::WARN, 
+        ndpp_log::logger("Tensor.hpp", "Tensor::migrate(IntArray&)", ndpp_log::RuntimeType::WARN, 
                          "shape.status() differs from strides.status().", true);
         return;
     }
 
     size_t dim = 0;
-    size_t *_shape = nullptr, *_strides = nullptr;
+    Integer *_shape = nullptr, *_strides = nullptr;
     ndpp_memory::DeviceType info_dtype = ndpp_memory::DeviceType::Host;
     ndpp::ndpp_memory::DeviceStatus info_dstatus = ndpp::ndpp_memory::DeviceStatus::Allocation;
-    shape.migrateTo((size_t**)&_shape, dim, info_dtype, info_dstatus);
-    strides.migrateTo((size_t**)&_strides, dim, info_dtype, info_dstatus);
+    shape.migrateTo((Integer**)&_shape, dim, info_dtype, info_dstatus);
+    strides.migrateTo((Integer**)&_strides, dim, info_dtype, info_dstatus);
 
-    DeviceMigrate(data, (size_t**)&_shape, (size_t**)&_strides, dim,
+    DeviceMigrate(data, (Integer**)&_shape, (Integer**)&_strides, dim,
                   stype, data_dtype, info_dtype, dstatus, 
-                  "Tensor.hpp", "Tensor::migrate(SizeTArray&)");
+                  "Tensor.hpp", "Tensor::migrate(IntArray&)");
 }
 
-inline void Tensor::zerosV(const SizeTArray &shape, const SizeTArray &strides,
+inline void Tensor::zerosV(const IntArray &shape, const IntArray &strides,
                            const ndpp_memory::ScalarType stype, 
                            const ndpp_memory::DeviceType dtype)
 {
@@ -798,10 +798,10 @@ inline void Tensor::zerosV(const SizeTArray &shape, const SizeTArray &strides,
                 "Tensor.hpp", "Tensor::zerosV()");
 }
 
-void Tensor::zerosB(const SizeTArray &shape, const ndpp_memory::ScalarType stype, 
+void Tensor::zerosB(const IntArray &shape, const ndpp_memory::ScalarType stype, 
                     const ndpp_memory::DeviceType dtype)
 {
-    SizeTArray strides;
+    IntArray strides;
     ndpp_data_arch::calcStrides(shape, stype, strides, ndpp_memory::DeviceType::Host,
                                 "Tensor.hpp", "Tensor::zerosB()");
 

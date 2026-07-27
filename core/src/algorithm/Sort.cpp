@@ -186,7 +186,7 @@ Tensor sort(const Tensor &src, int64_t dim, const bool descending, const bool st
     Tensor _dst = src.clone(ndpp_memory::DeviceType::Host);
 
     int64_t _self_dim = static_cast<int64_t>(_dst.dim());
-    SizeTArray _shape = _dst.sizes();
+    IntArray _shape = _dst.sizes();
     
     if (dim < 0)
     {

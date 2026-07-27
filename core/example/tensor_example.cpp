@@ -8,7 +8,7 @@ using namespace ndpp;
 
 #ifdef CUDA
 #define device_id_t 1
-#define device_t ndpp::CudaDevice
+#define device_t ndpp::CudaZeroCpy
 #else
 #define device_t ndpp::Host
 #endif
@@ -20,10 +20,11 @@ int main()
 {
 
 //while (1)
- //   {
+//    {
 #ifdef CUDA
     ndpp::ndpp_memory::ndpp_cuda::cudaExecDevice(device_id_t, "tensor_example.cpp", "main()");
 #endif
+
     Tensor tensor_test = ndpp::zeros({3, 4, 5}, scalar_t, device_t);
     Tensor tensor_test2 = ndpp::zeros({4, 5}, scalar_t, device_t);
 
@@ -31,8 +32,8 @@ int main()
     cout << "tensor_test dim: " << tensor_test.dim() << endl;
     cout << "tensor_test stype: " << int(tensor_test.scalar()) << endl;
 
-    SizeTArray shape = tensor_test.sizes();
-    SizeTArray strides = tensor_test.strides();
+    IntArray shape = tensor_test.sizes();
+    IntArray strides = tensor_test.strides();
 
     cout << "tensor_test shape: ";
     for (auto sh : shape)
@@ -48,10 +49,10 @@ int main()
     }
     cout << endl;
 
-
     
 
-    //double start_time_1 = omp_get_wtime();
+    double start_time_1 = omp_get_wtime();
+    //#pragma omp parallel for
     for (int i = 0; i < (int)shape[0]; ++i)
     {
         for (int j = 0; j < (int)shape[1]; ++j)
@@ -59,28 +60,35 @@ int main()
             for (int k = 0; k < (int)shape[2]; ++k)
             {
                 //cout << float() << endl;
-                 tensor_test2[j][k] = k + j * 5;
+                tensor_test2[j][k] = k + j * 5;
                 tensor_test[i][j][k] = float(k + j * (5)+ i * 20);
             }
         }
     }
-    //double end_time_1 = omp_get_wtime();
-    //cout << endl;
+    double end_time_1 = omp_get_wtime();
+    cout << "eplased_time (by operator[]): " << end_time_1 - start_time_1 << endl;
 
 
-    for (int j = 0; j < (int)shape[1]; ++j)
+    float *tensor_test2_ptr = (ndpp_memory::ScalarTypeToCppType<scalar_t>::type*)tensor_test2.data();
+    float *tensor_test_ptr = (ndpp_memory::ScalarTypeToCppType<scalar_t>::type*)tensor_test.data();
+    double start_time_2 = omp_get_wtime();
+    for (int i = 0; i < (int)shape[0]; ++i)
+    {
+        for (int j = 0; j < (int)shape[1]; ++j)
         {
             for (int k = 0; k < (int)shape[2]; ++k)
             {
-                //cout << tensor_ptr[k + j * (5)+ i * 20] << ",";
-                cout << float(tensor_test2[j][k])  << ",";
+                //cout << float() << endl;
+                tensor_test2_ptr[k + j * 5] = k + j * 5;
+                tensor_test_ptr[k + j * (5)+ i * 20] = float(k + j * (5)+ i * 20);
             }
-            cout << endl;
         }
-        cout << endl;
+    }
+    double end_time_2 = omp_get_wtime();
+    cout << "eplased_time (by ponter): " << end_time_2 - start_time_2 << endl;
 
 
-    //float *tensor_ptr = (ndpp_memory::ScalarTypeToCppType<scalar_t>::type*)tensor_test.data();
+    //
 
     cout << "tensor_test:" << endl;
     for (int i = 0; i < 3; ++i)
@@ -138,6 +146,6 @@ int main()
         cout << endl;
     }
     cout << endl;
-
+ //   }
     return 0;
 }

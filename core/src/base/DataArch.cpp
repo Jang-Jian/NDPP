@@ -3,8 +3,14 @@
 #include <include/logging/Logging.hpp>
 
 
+namespace ndpp
+{
+
+namespace ndpp_data_arch
+{
+
 // Detect wether has same dimension or 0-dimension with 'shape' & 'strides'.
-static inline bool isDimError(const ndpp::SizeTArray &shape, const ndpp::SizeTArray &strides, 
+static inline bool isDimError(const ndpp::IntArray &shape, const ndpp::IntArray &strides, 
                               const string &who_call, const string &file_name, const string &method_name)
 {
     const size_t shape_dim = shape.size();
@@ -39,15 +45,8 @@ static inline size_t isZeroDim(const void *data_ptr)
 }
 
 
-namespace ndpp
-{
-
-namespace ndpp_data_arch
-{
-
-
-void calcShape(const SizeTArray &src_shape, const SizeTArray &src_strides, 
-               SizeTArray &dst_shape, const ndpp_memory::DeviceType dst_shape_dtype,
+void calcShape(const IntArray &src_shape, const IntArray &src_strides, 
+               IntArray &dst_shape, const ndpp_memory::DeviceType dst_shape_dtype,
                const string &file_name, const string &method_name)
 {
     if (!isDimError(src_shape, src_strides, "ndpp_data_arch::calcShape()", 
@@ -74,8 +73,8 @@ void calcShape(const SizeTArray &src_shape, const SizeTArray &src_strides,
 }
 
 
-void calcStrides(const SizeTArray &src_shape, const ndpp_memory::ScalarType stype,
-                 SizeTArray &dst_strides, const ndpp_memory::DeviceType dst_strides_dtype,
+void calcStrides(const IntArray &src_shape, const ndpp_memory::ScalarType stype,
+                 IntArray &dst_strides, const ndpp_memory::DeviceType dst_strides_dtype,
                  const string &file_name, const string &method_name)
 {
     
@@ -90,12 +89,12 @@ void calcStrides(const SizeTArray &src_shape, const ndpp_memory::ScalarType styp
     dst_strides.allocate(src_shape.size(), dst_strides_dtype);
     size_t stype_size = ndpp_memory::sizeOfScalar(stype, file_name, method_name);
 
-    size_t mul_val = src_shape[0];
+    /*size_t mul_val = src_shape[0];
 
     for (int idx = 1; idx < (int)shape_dim; ++idx)
     {
         mul_val *= src_shape[idx];
-    }
+    }*/
     
     //cout << "mul_val: " << mul_val << endl;
 
@@ -112,10 +111,12 @@ void calcStrides(const SizeTArray &src_shape, const ndpp_memory::ScalarType styp
     }*/
 
 
-    unsigned int stride = stype_size;
+    size_t mul_val = src_shape[shape_dim - 1];
+    size_t stride = stype_size;
 
     for (int i = shape_dim - 2; i >= 0; --i)
     {
+        mul_val *= src_shape[i];
         stride *= src_shape[i + 1];
         dst_strides[i] = stride;
     }
@@ -132,7 +133,7 @@ void calcStrides(const SizeTArray &src_shape, const ndpp_memory::ScalarType styp
 }
 
 
-size_t calcAllocSize(const SizeTArray &src_shape, const SizeTArray &src_strides, const void *data_ptr,
+size_t calcAllocSize(const IntArray &src_shape, const IntArray &src_strides, const void *data_ptr,
                      const string &file_name, const string &method_name)
 {
     if (!isDimError(src_shape, src_strides, "ndpp_data_arch::calcAllocSize()", 
@@ -141,7 +142,7 @@ size_t calcAllocSize(const SizeTArray &src_shape, const SizeTArray &src_strides,
         return isZeroDim(data_ptr);
     }
 
-    SizeTArray act_shape;
+    IntArray act_shape;
     calcShape(src_shape, src_strides, act_shape, ndpp_memory::DeviceType::Host,
               file_name, method_name);
 
@@ -155,7 +156,7 @@ size_t calcAllocSize(const SizeTArray &src_shape, const SizeTArray &src_strides,
 }
 
 
-size_t calcEleSize(const SizeTArray &src_shape, const void *data_ptr)
+size_t calcEleSize(const IntArray &src_shape, const void *data_ptr)
 {
     if (src_shape.size() == 0)
     {
