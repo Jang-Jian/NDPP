@@ -9,25 +9,32 @@ namespace ndpp
 {
 
 namespace ndpp_log
-{
+{ 
+
+constexpr const char* _InfoStr  = "info";
+constexpr const char* _ErrorStr = "error";
+constexpr const char* _WarnStr  = "warn";
+constexpr const char* _DebugStr = "debug";
+constexpr const char* _EndStr   = "end";
+
 
 // LogType: log type.
 enum class RuntimeType
 {
     // [RuntimeInfo].
-    INFO  = 0,
+    Info  = 0,
 
     // [RuntimeError].
-    ERROR = 1,
+    Error = 1,
 
     // [RuntimeWarn].
-    WARN  = 2,
+    Warn  = 2,
 
     // [RuntimeDebug].
-    DEBUG = 3,
+    Debug = 3,
 
     // [RuntimeEnd].
-    END   = 4
+    End   = 4
 };
 
 

@@ -52,6 +52,8 @@ protected:
                      const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype,
                      const string &file_name, const string &method_name);
 
+    inline void DeviceMigrate(TensorDevice &src, const string &file_name, const string &method_name);
+
     void DeviceMigrate(void **data, Integer **shape, Integer **strides, size_t &dim,
                        ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, ndpp_memory::DeviceType &info_dtype, 
                        ndpp_memory::DeviceStatus &dstatus, const string &file_name, const string &method_name);
@@ -81,6 +83,12 @@ private:
     ndpp_memory::DeviceType _info_dtype = ndpp_memory::DeviceType::Host;
     ndpp_memory::DeviceStatus _dstatus = ndpp_memory::DeviceStatus::Allocation;
 };
+
+inline void TensorDevice::DeviceMigrate(TensorDevice &src, const string &file_name, const string &method_name)
+{
+    DeviceMigrate((void**)&src._data, (Integer**)&src._shape, (Integer**)&src._strides, src._dim,
+                  src._stype, src._data_dtype, src._info_dtype, src._dstatus, file_name, method_name);
+}
 
 inline void* TensorDevice::DevicePtr() const
 {

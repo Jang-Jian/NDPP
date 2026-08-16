@@ -139,14 +139,14 @@ inline T& Array<T>::at(const size_t pos)
 
     if (_size == 0)
     {
-        ndpp_log::logger("Array.hpp", "Array<T>::at()", ndpp_log::RuntimeType::ERROR, 
+        ndpp_log::logger("Array.hpp", "Array<T>::at()", ndpp_log::RuntimeType::Error, 
                          "The size of array is 0.", true);
         exit(EXIT_FAILURE); // terminating the process.
     }
 
     if (pos >= _size)
     {
-        ndpp_log::logger("Array.hpp", "Array<T>::at()", ndpp_log::RuntimeType::ERROR, 
+        ndpp_log::logger("Array.hpp", "Array<T>::at()", ndpp_log::RuntimeType::Error, 
                          "Index(pos) is out of range.", true);
         exit(EXIT_FAILURE); // terminating the process.
     }

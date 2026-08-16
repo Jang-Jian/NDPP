@@ -28,19 +28,19 @@ string logger(const string &file_name, const string &method_name, const RuntimeT
     string _log_level_str;
     switch (level)
     {
-        case RuntimeType::INFO:  
+        case RuntimeType::Info:  
             _log_level_str = "[RuntimeInfo]";  
             break;
-        case RuntimeType::ERROR: 
+        case RuntimeType::Error: 
             _log_level_str = "[RuntimeError]"; 
             break;
-        case RuntimeType::WARN:  
+        case RuntimeType::Warn:  
             _log_level_str = "[RuntimeWarn]";  
             break;
-        case RuntimeType::DEBUG: 
+        case RuntimeType::Debug: 
             _log_level_str = "[RuntimeDebug]"; 
             break;
-        case RuntimeType::END:   
+        case RuntimeType::End:   
             _log_level_str = "[RuntimeEnd]";   
             break;
     }
@@ -55,14 +55,14 @@ string logger(const string &file_name, const string &method_name, const RuntimeT
     {
         switch (level)
         {
-            case RuntimeType::ERROR:
-            case RuntimeType::WARN:
+            case RuntimeType::Error:
+            case RuntimeType::Warn:
                 fprintf(stderr, "%s", _system_log_ptr);
                 break;
 
-            case RuntimeType::INFO:
-            case RuntimeType::DEBUG:
-            case RuntimeType::END:
+            case RuntimeType::Info:
+            case RuntimeType::Debug:
+            case RuntimeType::End:
                 fprintf(stdout, "%s", _system_log_ptr);
                 break;
         }

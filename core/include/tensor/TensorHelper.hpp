@@ -14,8 +14,8 @@ inline Tensor zeros(const IntArray &size, const ndpp_memory::ScalarType stype = 
 
 // Returns a tensor filled with the scalar value 1, with the shape defined by the variable argument.
 // Reference: https://docs.pytorch.org/docs/2.12/generated/torch.ones.html
-inline Tensor onces(const IntArray &size, const ndpp_memory::ScalarType stype = ndpp_memory::ScalarType::Float32,
-                    const ndpp_memory::DeviceType dtype = ndpp_memory::DeviceType::Host);
+inline Tensor ones(const IntArray &size, const ndpp_memory::ScalarType stype = ndpp_memory::ScalarType::Float32,
+                   const ndpp_memory::DeviceType dtype = ndpp_memory::DeviceType::Host);
 
 // Creates a tensor of size size filled with fill_value. The tensor’s dtype is inferred from fill_value.
 // Reference: https://docs.pytorch.org/docs/2.12/generated/torch.full.html
@@ -33,8 +33,8 @@ inline Tensor zeros(const IntArray &size, const ndpp_memory::ScalarType scalar_t
 }
 
 
-inline Tensor onces(const IntArray &size, const ndpp_memory::ScalarType scalar_t,
-                    const ndpp_memory::DeviceType device_t)
+inline Tensor ones(const IntArray &size, const ndpp_memory::ScalarType scalar_t,
+                   const ndpp_memory::DeviceType device_t)
 {
     Tensor _dst;
     _dst.zerosB(size, scalar_t, device_t);

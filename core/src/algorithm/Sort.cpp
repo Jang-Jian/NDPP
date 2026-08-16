@@ -195,7 +195,7 @@ Tensor sort(const Tensor &src, int64_t dim, const bool descending, const bool st
 
     if (dim < 0 || dim >= _self_dim)
     {
-        ndpp_log::logger("sort.cpp", "ndpp::sort()", ndpp_log::RuntimeType::ERROR, 
+        ndpp_log::logger("sort.cpp", "ndpp::sort()", ndpp_log::RuntimeType::Error, 
                          "Dim " + to_string(static_cast<long long>(dim)) + " is out of dimension with size " + 
                          to_string(static_cast<long long>(_self_dim)) + ".", true);
         exit(EXIT_FAILURE);

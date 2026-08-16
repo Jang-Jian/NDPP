@@ -35,27 +35,24 @@ inline void mixMemoryCopy(const T *src, const DeviceType src_device_type,
                           T *dst, const DeviceType dst_device_type, const size_t size,
                           const string &file_name, const string &method_name);
 
-}; // namespace ndpp::ndpp_memory
 
-
-namespace ndpp_memory
-{
-
+constexpr const char* _AllocationStr = "allocation";  
+constexpr const char* _ReferenceStr  = "reference";
 
 
 enum class DeviceStatus
 {
     // Allocation: The memory has allocated.
-    Allocation = 1,
+    Allocation = 0,
 
     // Reference:  The memory has referenced.
-    Reference  = 2  
+    Reference  = 1  
 };
 
 
 template<typename T>
 inline T* mixMemoryAlloc(const size_t size, const DeviceType device_type,
-                             const string &file_name, const string &method_name)
+                         const string &file_name, const string &method_name)
 {
     if (size == 0)
     {

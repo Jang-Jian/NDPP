@@ -6,8 +6,8 @@ SHELL := bash
 
 ifeq ($(WITH_CUDA), 1)
 
-CUDA_DEPENDENCY=-I$(CUDA_INCLUDE) -L$(CUDA_LIBS) -lcuda -lcudart -lcublas -lcurand
-CC_DEPENDENCY+=$(CUDA_DEPENDENCY)
+CU_DEPENDENCY=-I$(CUDA_INCLUDE) -L$(CUDA_LIBS) -lcuda -lcudart -lcublas -lcurand
+CC_DEPENDENCY+=$(CU_DEPENDENCY)
 
 # Detect the nvcc version.
 NVCC_VER = $(shell nvcc --version | grep release | cut -d, -f2 | cut -c10-15)

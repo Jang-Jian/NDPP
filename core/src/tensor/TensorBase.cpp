@@ -129,7 +129,7 @@ void TensorDevice::DeviceAlloc(const IntArray &shape, const IntArray &strides,
     else
     {
         DeviceDeAlloc(file_name, method_name);
-        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::WARN, 
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
                          "Due to nullptr of this->_data allocation, it has destoryed other releated buffers (this->_shape & this->_strides).", true);
     }
 }
@@ -163,8 +163,27 @@ void TensorDevice::DeviceRefer(void *data, const IntArray &shape, const IntArray
                                const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype,
                                const string &file_name, const string &method_name)
 {
-    if (data == this->_data)
+    if (this->_data && this->_data == data && 
+        this->_dstatus == ndpp_memory::DeviceStatus::Allocation)
     {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The data pointer is same as input's data (same object). It won't reference.", true);
+        return;
+    }
+
+    if (this->_shape && this->_shape == shape.data() && 
+        this->_dstatus == ndpp_memory::DeviceStatus::Allocation)
+    {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The shape pointer is same as input's shape (same object). It won't reference.", true);
+        return;
+    }
+
+    if (this->_strides && this->_strides == strides.data() && 
+        this->_dstatus == ndpp_memory::DeviceStatus::Allocation)
+    {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The strides pointer is same as input's strides (same object). It won't reference.", true);
         return;
     }
 
@@ -174,14 +193,14 @@ void TensorDevice::DeviceRefer(void *data, const IntArray &shape, const IntArray
 
     if (shape.data() && _expect_dtype != shape.device())
     {
-        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::WARN, 
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
                          "The shape's DeviceType differs from expectation. It won't reference.", true);
         return;
     }
 
     if (strides.data() &&  _expect_dtype != strides.device())
     {
-        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::WARN, 
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
                          "The strides's DeviceType differs from expectation. It won't reference.", true);
         return;
     }
@@ -216,8 +235,8 @@ void TensorDevice::DeviceRefer(void *data, const IntArray &shape, const IntArray
     }
     else
     {
-         ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::WARN, 
-                          "The shape's dim differs from strides's dim. It won't reference.", true);
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The shape's dim differs from strides's dim. It won't reference.", true);
     }
 }
 
@@ -227,16 +246,22 @@ void TensorDevice::DeviceMigrate(void **data, Integer **shape, Integer **strides
 {
     if (this->_data && data[0] && this->_data == data[0])
     {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The data pointer is same as input's data (same object). It won't migrate.", true);
         return;
     }
     
     if (this->_shape && shape[0] && this->_shape == shape[0])
     {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The shape pointer is same as input's shape (same object). It won't migrate.", true);
         return;
     }
 
     if (this->_strides && strides[0] && this->_strides == strides[0])
     {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The strides pointer is same as input's strides (same object). It won't migrate.", true);
         return;
     }
 
@@ -267,6 +292,30 @@ void TensorDevice::DeviceCopy(const void *data, const ndpp_memory::ScalarType sr
                               const IntArray &shape, const IntArray &strides, 
                               const string &file_name, const string &method_name)
 {
+    if (this->_data && this->_data == data && 
+        this->_dstatus == ndpp_memory::DeviceStatus::Allocation)
+    {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The data pointer is same as input's data (same object). It won't copy.", true);
+        return;
+    }
+
+    if (this->_shape && this->_shape == shape.data() && 
+        this->_dstatus == ndpp_memory::DeviceStatus::Allocation)
+    {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The shape pointer is same as input's shape (same object). It won't copy.", true);
+        return;
+    }
+
+    if (this->_strides && this->_strides == strides.data() && 
+        this->_dstatus == ndpp_memory::DeviceStatus::Allocation)
+    {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The shape strides is same as input's strides (same object). It won't copy.", true);
+        return;
+    }
+
     DeviceDeAlloc(file_name, method_name);
 
     if (!data)

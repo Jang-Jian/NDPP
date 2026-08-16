@@ -11,6 +11,15 @@ namespace ndpp_memory
 enum class DeviceType;
 
 
+constexpr const char* _HostStr         = "host";
+#ifdef CUDA
+constexpr const char* _CudaDeviceStr   = "cuda_device";
+constexpr const char* _CudaPinnedStr   = "cuda_pinned";
+constexpr const char* _CudaUnifiedStr  = "cuda_unified";
+constexpr const char* _CudaZeroCpyStr  = "cuda_zerocpy";
+#endif
+
+
 enum class DeviceType
 {
     // Host: Host(Paged) memory allocation.

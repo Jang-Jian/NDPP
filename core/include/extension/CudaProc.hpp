@@ -55,21 +55,35 @@ inline bool cudaErrorChecker(const cudaError_t status, const string &file_name, 
 
     if (status != cudaSuccess)
     {
-        const char *s = cudaGetErrorString(status);
-        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::ERROR, 
-                         "In ndpp::ndpp_memory::ndpp_cuda::cudaErrorChecker(), " + string(s) + ".", true);
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Error, 
+                         "In ndpp::ndpp_memory::ndpp_cuda::cudaErrorChecker(), " + string(cudaGetErrorString(status)) + ".", true);
         return false;
     }
 
     if (status2 != cudaSuccess)
     {
-        const char *s = cudaGetErrorString(status2);
-        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::ERROR, 
-                         "In ndpp::ndpp_memory::ndpp_cuda::cudaErrorChecker(), " + string(s) + ".", true);
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Error, 
+                         "In ndpp::ndpp_memory::ndpp_cuda::cudaErrorChecker(), " + string(cudaGetErrorString(status2)) + ".", true);
         return false;
 	}
 
     return true;
+}
+
+
+// Get number of cuda devices.
+inline int cudaGetDevices(const string &file_name, const string &method_name)
+{
+    int device_count = 0;
+    cudaErrorChecker(cudaGetDeviceCount(&device_count), file_name, method_name);
+    return device_count;
+}
+
+
+// Check whether cuda is available.
+inline bool cudaAvailable(const string &file_name, const string &method_name)
+{
+    return (cudaGetDevices(file_name, method_name) > 0) ? true : false;
 }
 
 

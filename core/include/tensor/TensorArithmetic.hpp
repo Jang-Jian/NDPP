@@ -54,16 +54,19 @@ void arithmeticForward(const Scalar &a, const Tensor &b, Tensor &c,
 enum class Arithmetic
 {
     // operator+
-    Add      = 0,
+    Add           = 0,
 
     // operator-
-    Subtract = 1,
+    Subtract      = 1,
 
     // opeator*.
-    Multiply = 2,
+    Multiply      = 2,
 
     // opeator/.
-    Division = 3
+    Division      = 3,
+
+    // floor operator/.
+    FloorDivision = 4
 };
 
 

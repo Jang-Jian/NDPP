@@ -136,7 +136,7 @@ void ListDevice::InsertNode(NodeDevice *target_node, NodeDevice *src_node, const
         break;
     
     default:
-        ndpp_log::logger("ListBase.cpp", "ListDevice::InsertNode()", ndpp_log::RuntimeType::WARN,
+        ndpp_log::logger("ListBase.cpp", "ListDevice::InsertNode()", ndpp_log::RuntimeType::Warn,
                          "There is no matched ndpp_action::ListPushAction.", true);
         return;
     }

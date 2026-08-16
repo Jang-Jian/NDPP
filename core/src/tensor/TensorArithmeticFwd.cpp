@@ -66,7 +66,7 @@ static inline void compareDim(const Tensor &a, const Tensor &b,
     {
         if (a.allocations() != 1 || b.allocations() != 1)
         {
-            ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::ERROR,
+            ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::Error,
                              "The size of tensor a (" + to_string(issue_a_size) + ") must match the size of tensor b (" + 
                              to_string(issue_b_size) + ") at non-singleton dimension " + to_string(issue_dim), true);
             exit(EXIT_FAILURE);
@@ -353,6 +353,12 @@ static inline void cpuArithForwardKernel(const void *a, const void *b, void *c, 
                                                 b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total,
                                                 loop_total);
         break;
+    case Arithmetic::FloorDivision:
+         cpuArithForwardACTypeImpleKernel<FloorDivOp>(a, b, c, a_stype,b_stype,
+                                                      a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                                      b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total,
+                                                      loop_total);
+        break;
     }
 }
 
@@ -361,14 +367,14 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
 {
     if (!a.data())
     {
-        ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::ERROR,
+        ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::Error,
                          "The tensor a is empty, and please allocate tensor a first.", true);
         exit(EXIT_FAILURE);
     }
 
     if (!b.data())
     {
-        ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::ERROR,
+        ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::Error,
                          "The tensor b is empty, and please allocate tensor b first.", true);
         exit(EXIT_FAILURE);
     }
@@ -416,7 +422,7 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
             std::string a_shape_str = shapeStr(a_acutal_shape);
             std::string b_shape_str = shapeStr(b_acutal_shape);
             
-            ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::ERROR,
+            ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::Error,
                                 "Output with shape " + a_shape_str + " doesn't match the broadcast shape " + b_shape_str + ".", true);
             exit(EXIT_FAILURE);
         }
@@ -564,7 +570,7 @@ void arithmeticForward(const Tensor &a, const Scalar &b, Tensor &c,
 {
     if (!a.data())
     {
-        ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::ERROR,
+        ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::Error,
                          "The tensor a is empty, and please allocate tensor a first", true);
         exit(EXIT_FAILURE);
     }
@@ -632,7 +638,7 @@ void arithmeticForward(const Scalar &a, const Tensor &b, Tensor &c,
 {
     if (!b.data())
     {
-        ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::ERROR,
+        ndpp_log::logger("TensorOperator.cpp", operator_name, ndpp_log::RuntimeType::Error,
                          "The tensor b is empty, and please allocate tensor b first", true);
         exit(EXIT_FAILURE);
     }

@@ -8,23 +8,8 @@ namespace ndpp
 namespace ndpp_memory
 {
 
-static constexpr const char* _UInt8Str   = "uint8";
-static constexpr const char* _UInt16Str  = "uint16";
-static constexpr const char* _UInt32Str  = "uint32";
-static constexpr const char* _UInt64Str  = "uint64";
-static constexpr const char* _Int8Str    = "int8";
-static constexpr const char* _Int16Str   = "int16";
-static constexpr const char* _Int32Str   = "int32";
-static constexpr const char* _Int64Str   = "int64";
-#ifdef HALF
-static constexpr const char* _Float16Str = "float16";
-#endif
-static constexpr const char* _Float32Str = "float32";
-static constexpr const char* _Float64Str = "float64";
-static constexpr const char* _BoolStr    = "bool";
 
-
-std::string scalarTypeToCppStr(const ScalarType stype)
+std::string scalarTypeToCppStr(const ScalarType stype, const bool terminate_out_of_stype)
 {
     switch (stype)
     {
@@ -56,13 +41,22 @@ std::string scalarTypeToCppStr(const ScalarType stype)
             return std::string(_BoolStr);
     }
 
-    ndpp_log::logger("ScalarType.cpp", "ndpp::ndpp_memory::scalarTypeToCppStr()", ndpp_log::RuntimeType::WARN, 
-                     "It doesn't find the correct ndpp::ndpp_memory::ScalarType, and it will return float32 as default.", true);
+    if (!terminate_out_of_stype)
+    {
+        ndpp_log::logger("ScalarType.cpp", "ndpp::ndpp_memory::scalarTypeToCppStr()", ndpp_log::RuntimeType::Warn, 
+                         "It doesn't find the correct ndpp::ndpp_memory::ScalarType, and it will return float32 as default.", true);
+    }
+    else
+    {
+        ndpp_log::logger("ScalarType.cpp", "ndpp::ndpp_memory::scalarTypeToCppStr()", ndpp_log::RuntimeType::Error, 
+                         "It doesn't find the correct ndpp::ndpp_memory::ScalarType, and process is terminated.", true);
+        exit(EXIT_FAILURE);
+    }
 
     return std::string(_Float32Str);
 }
 
-ScalarType cppStrToScalarType(const std::string stype)
+ScalarType cppStrToScalarType(const std::string stype, const bool terminate_out_of_stype)
 {
     if      (!stype.compare(_UInt8Str))   { return ScalarType::UInt8;   }
     else if (!stype.compare(_UInt16Str))  { return ScalarType::UInt16;  }
@@ -79,8 +73,17 @@ ScalarType cppStrToScalarType(const std::string stype)
     else if (!stype.compare(_Float64Str)) { return ScalarType::Float64; }
     else if (!stype.compare(_BoolStr))    { return ScalarType::Bool;    }
 
-    ndpp_log::logger("ScalarType.cpp", "ndpp::ndpp_memory::cppStrToScalarType()", ndpp_log::RuntimeType::WARN, 
-                     "It doesn't find the correct ndpp::ndpp_memory::ScalarType, and it will return ScalarType::Float32 as default.", true);
+    if (!terminate_out_of_stype)
+    {
+        ndpp_log::logger("ScalarType.cpp", "ndpp::ndpp_memory::cppStrToScalarType()", ndpp_log::RuntimeType::Warn, 
+                         "It doesn't find the correct ndpp::ndpp_memory::ScalarType, and it will return ScalarType::Float32 as default.", true);
+    }
+    else
+    {
+        ndpp_log::logger("ScalarType.cpp", "ndpp::ndpp_memory::cppStrToScalarType()", ndpp_log::RuntimeType::Error, 
+                         "It doesn't find the correct ndpp::ndpp_memory::ScalarType, and process is terminated.", true);
+        exit(EXIT_FAILURE);
+    }
     
     return ScalarType::Float32;
 }

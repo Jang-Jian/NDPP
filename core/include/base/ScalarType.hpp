@@ -37,10 +37,12 @@ template <ScalarType T> struct ScalarTypeToCppType;
 template <typename T> struct CppTypeToScalarType;
 
 // Convert ndpp_memory::ScalarType to std::string.
-std::string scalarTypeToCppStr(const ScalarType stype);
+// P.S terminate_out_of_stype is used for when stype doesn't exist then terminate entire process. 
+std::string scalarTypeToCppStr(const ScalarType stype, const bool terminate_out_of_stype = false);
 
 // Convert std::string to ndpp_memory::ScalarType.
-ScalarType cppStrToScalarType(const std::string stype);
+// P.S terminate_out_of_stype is used for when stype doesn't exist then terminate entire process. 
+ScalarType cppStrToScalarType(const std::string stype, const bool terminate_out_of_stype = false);
 
 // Access the pointer via ndpp::ndpp_memory::ScalarType & specific position.
 inline void* scalarPtrShift(const void *src, const ScalarType stype, const int64_t pos);
@@ -61,11 +63,21 @@ inline void mixScalarCopy(const void *src, const DeviceType src_device_type,
                           void *dst, const DeviceType dst_device_type, const ScalarType stype, const size_t size,
                           const string &file_name, const string &method_name);
 
-}; // namespace ndpp::ndpp_memory
 
-
-namespace ndpp_memory
-{
+constexpr const char* _UInt8Str   = "uint8";
+constexpr const char* _UInt16Str  = "uint16";
+constexpr const char* _UInt32Str  = "uint32";
+constexpr const char* _UInt64Str  = "uint64";
+constexpr const char* _Int8Str    = "int8";
+constexpr const char* _Int16Str   = "int16";
+constexpr const char* _Int32Str   = "int32";
+constexpr const char* _Int64Str   = "int64";
+#ifdef HALF
+constexpr const char* _Float16Str = "float16";
+#endif
+constexpr const char* _Float32Str = "float32";
+constexpr const char* _Float64Str = "float64";
+constexpr const char* _BoolStr    = "bool";
 
 
 enum class ScalarType
@@ -211,7 +223,7 @@ inline T scalarPtrAccess(const void *src, const ScalarType stype, const DeviceTy
 {
     if (!src)
     {
-        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::ERROR, 
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Error, 
                          "In ndpp::ndpp_memory::scalarPtrAccess(), the src ptr is nullptr.", true);
         exit(EXIT_FAILURE);
     }

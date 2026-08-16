@@ -151,7 +151,7 @@ inline void Generic::detect() const
 {
     if (!this->_data)
     {
-        ndpp_log::logger("DataGeneric.hpp", "Generic::value<T>()", ndpp_log::RuntimeType::ERROR, 
+        ndpp_log::logger("DataGeneric.hpp", "Generic::value<T>()", ndpp_log::RuntimeType::Error, 
                          "There is no data type which is allocated (data=nullptr).", true);
         exit(EXIT_FAILURE);
     }
@@ -164,7 +164,7 @@ inline void Generic::detect() const
         std::string assigned_dtype_str = typeInfo2Str(assigned_dtype);
         std::string allocated_dtype_str = typeInfo2Str(allocated_dtype);
 
-        ndpp_log::logger("DataGeneric.hpp", "Generic::value<T>()", ndpp_log::RuntimeType::ERROR, 
+        ndpp_log::logger("DataGeneric.hpp", "Generic::value<T>()", ndpp_log::RuntimeType::Error, 
                          "The assigned type is '" + assigned_dtype_str + "' but allocated type is '" + allocated_dtype_str + "'.", true);
         exit(EXIT_FAILURE);
     }
@@ -188,7 +188,7 @@ inline const std::string Generic::name() const
 {
     if (!this->_data)
     {
-        ndpp_log::logger("DataGeneric.hpp", "Generic::name()", ndpp_log::RuntimeType::ERROR, 
+        ndpp_log::logger("DataGeneric.hpp", "Generic::name()", ndpp_log::RuntimeType::Error, 
                          "There is no data type which is allocated (data=nullptr).", true);
         exit(EXIT_FAILURE);
     }

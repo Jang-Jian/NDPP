@@ -34,7 +34,7 @@ public:
     { 
         if (!_t_ptr)
         {
-            ndpp_log::logger("BasicIterator.hpp", "BasicIterator<T>::operator*()", ndpp_log::RuntimeType::ERROR,
+            ndpp_log::logger("BasicIterator.hpp", "BasicIterator<T>::operator*()", ndpp_log::RuntimeType::Error,
                              "Self pointer is nullptr.", true);
             exit(EXIT_FAILURE);
         }

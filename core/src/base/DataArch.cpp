@@ -18,7 +18,7 @@ static inline bool isDimError(const ndpp::IntArray &shape, const ndpp::IntArray 
 
     if (shape_dim != strides_dim)
     {
-        ndpp::ndpp_log::logger(file_name, method_name, ndpp::ndpp_log::RuntimeType::WARN, 
+        ndpp::ndpp_log::logger(file_name, method_name, ndpp::ndpp_log::RuntimeType::Warn, 
                                "In " + who_call + ", the shape's dim differs from strides's dim.", true);
         return false;
     }

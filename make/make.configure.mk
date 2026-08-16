@@ -31,15 +31,22 @@ DIR_OBJS=obj/
 endif
 DIR_KERNEL_OBJS=$(DIR_OBJS)kernel/
 DIR_EXE_OBJS=$(DIR_OBJS)exe/
+DIR_PYTHON_OBJS=$(DIR_OBJS)python/
 
 
-# Directory: shared libraries (*.so).
-ifdef PATH_LIBS
-DIR_LIBS=$(PATH_LIBS)/
+# Directory: shared libraries (*.so) for C++.
+ifdef PATH_CC_LIBS
+DIR_CC_LIBS=$(PATH_LIBS)/
 else
-DIR_LIBS=lib/
+DIR_CC_LIBS=lib/
 endif
 
+
+# Directory: shared libraries (*.so) for Python.
+DIR_PY_LIBS=ndpp/
+
+
+INSTALLED_CC_LIBS=/usr/local/ndpp
 
 # Directory: exe files.
 ifdef PATH_EXES

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include <include/base/InlineProc.hpp>
 #include <include/base/ScalarType.hpp>
 #include <include/base/SizeProc.hpp>
@@ -22,40 +24,44 @@ struct OperatorName                                                   \
     template<typename T1, typename T2>                                \
     ndppInline T1 operator()(T1 lhs, T2 rhs) const                    \
     {                                                                 \
-        const T1 r = static_cast<T1>(rhs);                            \
+        const T1 _rhs = static_cast<T1>(rhs);                         \
         return (Basic_Expr);                                          \
     }                                                                 \
                                                                       \
     template<typename T>                                              \
     ndppInline bool operator()(bool lhs, T rhs) const                 \
     {                                                                 \
-        const bool r = static_cast<bool>(rhs);                        \
+        const bool _rhs = static_cast<bool>(rhs);                     \
         return (Bool_Expr);                                           \
     }                                                                 \
 };
 
-NDPP_DEFINE_BINARY_OP(AddOp, lhs + r, lhs || r) 
-NDPP_DEFINE_BINARY_OP(SubOp, lhs - r, lhs - r)
-NDPP_DEFINE_BINARY_OP(MulOp, lhs * r, lhs && r)
-NDPP_DEFINE_BINARY_OP(DivOp, lhs / r, lhs / r)
+NDPP_DEFINE_BINARY_OP(AddOp, lhs + _rhs, lhs || _rhs) 
+NDPP_DEFINE_BINARY_OP(SubOp, lhs - _rhs, lhs - _rhs)
+NDPP_DEFINE_BINARY_OP(MulOp, lhs * _rhs, lhs && _rhs)
+NDPP_DEFINE_BINARY_OP(DivOp, (lhs != T1(0) && _rhs != T1(0)) ? (lhs / _rhs) : static_cast<T1>(0), (lhs != false && _rhs != false) ? (lhs / _rhs) : false)
+NDPP_DEFINE_BINARY_OP(FloorDivOp, (lhs != T1(0) && _rhs != T1(0)) ? static_cast<T1>(floor(static_cast<double>(lhs / _rhs))) : static_cast<T1>(0), (lhs != false && _rhs != false) ? (lhs / _rhs) : false)
+
 
 
 // arithmeticOp(V1).
 template<typename T1, typename T2>
 ndppInline T1 arithmeticOp(const T1 lhs, const T2 rhs, const Arithmetic type)
 {
-    const T1 r = static_cast<T1>(rhs);
+    const T1 _rhs = static_cast<T1>(rhs);
 
     switch (type)
     {
     case Arithmetic::Add:
-        return lhs + r;
+        return lhs + _rhs;
     case Arithmetic::Subtract:
-        return lhs - r;
+        return lhs - _rhs;
     case Arithmetic::Multiply:
-        return lhs * r;
+        return lhs * _rhs;
     case Arithmetic::Division:
-        return lhs / r;
+        return (lhs && _rhs) ? (lhs / _rhs) : static_cast<T1>(0);
+    case Arithmetic::FloorDivision:
+        return (lhs && _rhs) ? static_cast<T1>(floor(static_cast<double>(lhs / _rhs))) : static_cast<T1>(0);
     }
 
     return static_cast<T1>(0);
@@ -66,18 +72,19 @@ ndppInline T1 arithmeticOp(const T1 lhs, const T2 rhs, const Arithmetic type)
 template<typename T>
 ndppInline bool arithmeticOp(const bool lhs, const T rhs, const Arithmetic type)
 {
-    const bool r = static_cast<bool>(rhs);
+    const bool _rhs = static_cast<bool>(rhs);
 
     switch (type)
     {
     case Arithmetic::Add:
-        return lhs || r;
+        return lhs || _rhs;
     case Arithmetic::Subtract:
-        return lhs - r;
+        return lhs - _rhs;
     case Arithmetic::Multiply:
-        return lhs && r;
+        return lhs && _rhs;
     case Arithmetic::Division:
-        return lhs / r;
+    case Arithmetic::FloorDivision:
+        return (lhs) ? lhs / _rhs : false;
     }
 
     return false;

@@ -6,8 +6,8 @@
 namespace ndpp
 {
 
-constexpr auto Front = ndpp_action::ListPushAction::Front;
-constexpr auto Back = ndpp_action::ListPushAction::Back;
+constexpr const auto Front = ndpp_action::ListPushAction::Front;
+constexpr const auto Back  = ndpp_action::ListPushAction::Back;
 
 
 }; // namespace ndpp

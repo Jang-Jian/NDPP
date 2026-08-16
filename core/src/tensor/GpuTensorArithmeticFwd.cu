@@ -254,6 +254,12 @@ void gpuArithForwardKernel(const void *a, const void *b, void *c, const ndpp_mem
                                                 b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total,
                                                 loop_total);
         break;
+    case Arithmetic::FloorDivision:
+        gpuArithForwardACTypeImpleKernel<FloorDivOp>(a, b, c, a_stype,b_stype,
+                                                     a_allocated_shape, a_acutal_shape, a_strides, a_shape_dim, a_total,
+                                                     b_allocated_shape, b_acutal_shape, b_strides, b_shape_dim, b_total,
+                                                     loop_total);
+        break;
     }
 }
 

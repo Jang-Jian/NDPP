@@ -47,6 +47,7 @@ private:
 
 public:
     inline Scalar();
+    virtual inline ~Scalar() = default;
     inline Scalar(const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt8>::type src);
     inline Scalar(const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt16>::type src);
     inline Scalar(const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::UInt32>::type src);
@@ -140,7 +141,7 @@ inline Scalar::Scalar(const ndpp_memory::ScalarTypeToCppType<ndpp_memory::Scalar
 inline Scalar::Scalar(const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Float64>::type src) 
 { 
     this->_data.float64_val = src; 
-    this->_stype = ndpp_memory::ScalarType::Float64; 
+    this->_stype = ndpp_memory::ScalarType::Float64;
 }
 
 inline Scalar::Scalar(const ndpp_memory::ScalarTypeToCppType<ndpp_memory::ScalarType::Bool>::type src) 
@@ -185,7 +186,7 @@ inline void* Scalar::data() const
             break; 
     }
 
-    ndpp_log::logger("ndpp_memory::ScalarType.hpp", "Scalar::data()", ndpp_log::RuntimeType::WARN, 
+    ndpp_log::logger("ndpp_memory::ScalarType.hpp", "Scalar::data()", ndpp_log::RuntimeType::Warn, 
                      "It doesn't find the correct ndpp::ndpp_memory::ndpp_memory::ScalarType, and it will return nullptr.", true);
 
     return nullptr;
