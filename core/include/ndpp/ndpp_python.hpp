@@ -3,9 +3,11 @@
 
 #include <include/ndpp/ndpp.hpp>
 
+#include <include/python/PyList.hpp>
 #include <include/python/PyScalar.hpp>
 #include <include/python/PyHelper.hpp>
 #include <include/python/PyTensor.hpp>
+#include <include/python/PyListProc.hpp>
 #include <include/python/PyTensorProc.hpp>
 #include <include/python/PyExtension.hpp>
 

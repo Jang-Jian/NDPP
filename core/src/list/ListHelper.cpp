@@ -16,6 +16,7 @@ void advance(ListIterator &src, const std::ptrdiff_t steps)
     if (!_node)
     {
         src = ListIterator(nullptr);
+        return;
     }
 
     if (steps == 0)

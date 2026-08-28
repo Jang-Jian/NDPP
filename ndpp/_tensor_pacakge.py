@@ -18,7 +18,7 @@ class tensor(_cc_tensor):
         
         :param src: C++'s PyTensor.
         :type src: _ndpp_cpython._cc_tensor
-        :return: Python's tensor.
+        :return: Python's ndpp.tensor.
         :rtype: ndpp.tensor.
         """
         _dst_pytensor = tensor()

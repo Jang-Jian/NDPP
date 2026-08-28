@@ -32,12 +32,12 @@ public:
     // 1. Dereference operator
     inline reference operator*() 
     { 
-        if (!_t_ptr)
+        /*if (!_t_ptr)
         {
             ndpp_log::logger("BasicIterator.hpp", "BasicIterator<T>::operator*()", ndpp_log::RuntimeType::Error,
                              "Self pointer is nullptr.", true);
             exit(EXIT_FAILURE);
-        }
+        }*/
         return *_t_ptr; 
     }
     //pointer operator->() const { return _t_ptr; }

@@ -79,6 +79,8 @@ sudo make uninstall WITH_PYTHON=1
 
 ## Method.
 
+All examples that we save in [Samples for C++](example/cc) & [Samples for Python](example/python) respectively.
+
 ### Container.
 
 * Tensor (ndpp::Tensor): Representing a multi-dimensional array with a specific scalar type and device.
@@ -88,8 +90,9 @@ sudo make uninstall WITH_PYTHON=1
     * [Sample code for C++](example/cc/generic_example.cpp).
 * Array (ndpp::Array): A Container that encapsulates fixed size arrays. 
     * [Sample code for C++](example/cc/array_example.cpp).
-* List (ndpp::Tensor): It is a container that supports inserting generic data type, and it's implemented as a doubly-linked list.
+* List (ndpp::List): It is a container that supports inserting generic data type, and it's implemented as a doubly-linked list.
     * [Sample code for C++](example/cc/list_example.cpp).
+    * [Sample code for Python](example/python/list_example.py).
 * Stack (ndpp::Stack): A LIFO (Last-In, First-Out) / FILO (First-In, Last-Out) data structure.
     * [Sample code for C++](example/cc/stack_example.cpp).
     * Wrapped via ndpp::List.

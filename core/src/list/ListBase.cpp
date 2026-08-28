@@ -13,8 +13,19 @@ ListDevice::ListDevice()
 {
 }
 
-ListDevice::ListDevice(ListDevice &&src) : _head(src._head), _tail(src._tail), _num(src._num)
+ListDevice::ListDevice(ListDevice &&src)
 {
+    DeviceMigrate(src);
+}
+
+void ListDevice::DeviceMigrate(ListDevice &src)
+{
+    ClearNodes();
+
+    this->_head = src._head;
+    this->_tail = src._tail;
+    this->_num = src._num;
+
     src._head = nullptr;
     src._tail = nullptr;
     src._num = 0;

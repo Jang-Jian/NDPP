@@ -133,6 +133,29 @@ BOOST_PYTHON_MODULE(_ndpp_cpython)
             .def(ndppCPythonModule(std::string("migrate")).c_str(), &ndpp::ndpp_python::PyTensor::pymigrate)
             .def(ndppCPythonModule(std::string("from_tensor")).c_str(), &ndpp::ndpp_python::PyTensor::pyfromtensor)
             .def(ndppCPythonModule(std::string("from_numpy")).c_str(), &ndpp::ndpp_python::PyTensor::pyfromnumpy);
+
+
+        // Used for ndpp::ndpp_action::ListPushAction.
+        enum_<ndpp::ndpp_action::ListPushAction>(ndppCPythonModule(std::string("list_push_action")).c_str()); 
+        scope().attr(ndppCPythonModule(std::string(ndpp::ndpp_action::_FrontStr)).c_str()) = ndpp::Front;
+        scope().attr(ndppCPythonModule(std::string(ndpp::ndpp_action::_BackStr)).c_str())  = ndpp::Back;  
+        
+        // ndpp::ndpp_python::PyList: A wrapped ndpp::List for Python.
+        class_<ndpp::ndpp_python::PyList>(ndppCPythonModule(std::string("list")).c_str(), init<>())
+            .def(ndppCPythonModule(std::string("size")).c_str(), &ndpp::ndpp_python::PyList::size)
+            .def(ndppCPythonModule(std::string("clear")).c_str(), &ndpp::ndpp_python::PyList::clear)
+            .def(ndppCPythonModule(std::string("reverse")).c_str(),  &ndpp::ndpp_python::PyList::reverse)
+            .def(ndppCPythonModule(std::string("erase")).c_str(),  &ndpp::ndpp_python::PyList::pyerase)
+            .def(ndppCPythonModule(std::string("clone")).c_str(),  &ndpp::ndpp_python::PyList::pyclone)
+            .def(ndppCPythonModule(std::string("migrate")).c_str(),  &ndpp::ndpp_python::PyList::pymigrate)
+            .def(ndppCPythonModule(std::string("pop_front")).c_str(), &ndpp::ndpp_python::PyList::popFront)
+            .def(ndppCPythonModule(std::string("pop_back")).c_str(),  &ndpp::ndpp_python::PyList::popBack)
+            .def(ndppCPythonModule(std::string("front")).c_str(), &ndpp::ndpp_python::PyList::pyfront)
+            .def(ndppCPythonModule(std::string("back")).c_str(),  &ndpp::ndpp_python::PyList::pyback)
+            .def(ndppCPythonModule(std::string("splice")).c_str(),  &ndpp::ndpp_python::PyList::pysplice)
+            .def(ndppCPythonModule(std::string("insert")).c_str(),     &ndpp::ndpp_python::iInsert)
+            .def(ndppCPythonModule(std::string("push_back")).c_str(),  &ndpp::ndpp_python::iPushBack)
+            .def(ndppCPythonModule(std::string("push_front")).c_str(), &ndpp::ndpp_python::iPushFront);
     } 
     catch (const boost::python::error_already_set&)
     {
