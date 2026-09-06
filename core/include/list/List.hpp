@@ -15,10 +15,10 @@ namespace ndpp
 /*
     ListIterator: The iterator which is used for List.
 */
-class ListIterator : public ndpp_iterator::BasicIterator<NodeDevice>
+class ListIterator : public ndpp_iterator::BasicIterator<NodeDevice, ListIterator>
 {
 public:
-    inline ListIterator(pointer ptr) : ndpp_iterator::BasicIterator<NodeDevice>(ptr) {}
+    inline ListIterator(DataPointer ptr) : ndpp_iterator::BasicIterator<NodeDevice, ListIterator>(ptr) {}
 
     inline ListIterator& operator++() override
     {
@@ -30,6 +30,13 @@ public:
     {
         this->_t_ptr = this->_t_ptr->_prev;
         return *this;
+    }
+
+    inline ListIterator operator++(int) override
+    {
+        ListIterator temp(*this);
+        ++(*this);
+        return temp;
     }
 };
 

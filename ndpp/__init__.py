@@ -13,7 +13,7 @@ runtime_type.__module__     = __name__
 list_push_action.__module__ = __name__
 
 
-from _cuda_extension import set_cuda_device, \
+from _cuda_extension import set_cuda_device,  \
                             get_cuda_devices, \
                             check_cuda
 set_cuda_device.__module__  = __name__
@@ -36,5 +36,7 @@ ones.__module__   = __name__
 full.__module__   = __name__
 
 
-from _list_package import list
-list.__module__ = __name__
+from _list_package import list, node, list_iterator
+list.__module__          = __name__
+node.__module__          = __name__
+list_iterator.__module__ = __name__

@@ -5,6 +5,8 @@
 #include <include/list/List.hpp>
 #include <include/base/BasicType.hpp>
 #include <include/list/ListHelper.hpp>
+#include <include/python/PyNodeBase.hpp>
+#include <include/iterator/PyBasicIterator.hpp>
 
 using namespace boost::python;
 
@@ -14,6 +16,57 @@ namespace ndpp
     
 namespace ndpp_python
 {
+
+
+class PyListIterator : public PyBasicIterator<NodeDevice, PyNodeDevice, PyListIterator>
+{
+public:
+    inline PyListIterator(NodeDevice *ptr) : PyBasicIterator<NodeDevice, PyNodeDevice, PyListIterator>(ptr) {}
+
+    inline PyNodeDevice operator*() const override
+    { 
+        return PyNodeDevice(*this->_t_ptr); 
+    }
+
+    inline PyListIterator& operator++() override
+    {
+        this->_t_ptr = &this->_t_ptr->nextNode();
+        return *this;
+    }
+
+    inline PyListIterator& operator--() override
+    {
+        this->_t_ptr = &this->_t_ptr->prevNode();
+        return *this;
+    }
+
+    inline PyListIterator operator++(int) override
+    {
+        PyListIterator old(*this);
+        ++(*this);
+        return old;
+    }
+
+    inline PyListIterator& pyiter() override
+    {
+        return *this;
+    }
+
+    inline PyNodeDevice pynext() override
+    {
+        if (_t_ptr == nullptr)
+        {
+            PyErr_SetNone(PyExc_StopIteration);
+            boost::python::throw_error_already_set();
+        }
+
+        PyNodeDevice result = **this;
+        ++(*this);
+
+        return result;
+    }
+};
+
 
 class PyList : public List
 {
@@ -41,11 +94,22 @@ public:
 
     inline void pymigrate(PyList &src);
 
+
+    inline PyListIterator pybegin() const
+    {
+        return PyListIterator(&*begin());
+    }
+
+    inline PyListIterator pyend() const
+    {
+        return PyListIterator(&*end());
+    }
+
     // Returns a reference to the first element in the container.
-    inline boost::python::object pyfront() const;
+    inline PyNodeDevice pyfront() const;
 
     // Returns a reference to the last element in the container.
-    inline boost::python::object pyback() const;
+    inline PyNodeDevice pyback() const;
 
     inline void pysplice(const Integer position, PyList &src);
 };
@@ -112,16 +176,14 @@ inline void PyList::pymigrate(PyList &src)
     migrate(src);
 }
 
-inline boost::python::object PyList::pyfront() const
+inline PyNodeDevice PyList::pyfront() const
 {
-    NodeDevice &_front_node = front();
-    return _front_node.data().value<boost::python::object>();
+    return PyNodeDevice(front());
 }
 
-inline boost::python::object PyList::pyback() const
+inline PyNodeDevice PyList::pyback() const
 {
-    NodeDevice &_back_node = back();
-    return _back_node.data().value<boost::python::object>();
+    return PyNodeDevice(back());
 }
 
 inline void PyList::pysplice(const Integer position, PyList &src)

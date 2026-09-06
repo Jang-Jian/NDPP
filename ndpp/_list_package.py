@@ -1,4 +1,5 @@
 from _ndpp_cpython import _cc_list
+from _ndpp_cpython import node, list_iterator
 from _ctypes_package import list_push_action
 
 
@@ -21,6 +22,9 @@ class list(_cc_list):
         _dst_pylist = list()
         _dst_pylist.migrate(src)
         return _dst_pylist
+
+    def __iter__ (self) -> list_iterator:
+        return _cc_list._cc_iter(self)
 
     def size(self) -> int:
         """
