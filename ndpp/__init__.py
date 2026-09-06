@@ -6,13 +6,15 @@ from _ndpp_cpython import __doc__, __version__
 
 
 from _ctypes_package import *
-device_status.__module__  = __name__
-scalar_type.__module__    = __name__
-device_type.__module__    = __name__
-runtime_type.__module__   = __name__
+device_status.__module__    = __name__
+scalar_type.__module__      = __name__
+device_type.__module__      = __name__
+runtime_type.__module__     = __name__
+list_push_action.__module__ = __name__
 
 
-from _cuda_extension import set_cuda_device, get_cuda_devices, \
+from _cuda_extension import set_cuda_device,  \
+                            get_cuda_devices, \
                             check_cuda
 set_cuda_device.__module__  = __name__
 get_cuda_devices.__module__ = __name__
@@ -32,3 +34,9 @@ tensor.__module__ = __name__
 zeros.__module__  = __name__
 ones.__module__   = __name__
 full.__module__   = __name__
+
+
+from _list_package import list, node, list_iterator
+list.__module__          = __name__
+node.__module__          = __name__
+list_iterator.__module__ = __name__

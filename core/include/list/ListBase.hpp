@@ -50,6 +50,8 @@ protected:
 
     void CopyNodes(const ListDevice &src);
 
+    void DeviceMigrate(ListDevice &src);
+
     // P.S Due to more faster access, we record the final node address.
     NodeDevice *_head = nullptr;
     NodeDevice *_tail = nullptr;

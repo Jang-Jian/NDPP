@@ -15,10 +15,10 @@ namespace ndpp
 /*
     ListIterator: The iterator which is used for List.
 */
-class ListIterator : public ndpp_iterator::BasicIterator<NodeDevice>
+class ListIterator : public ndpp_iterator::BasicIterator<NodeDevice, ListIterator>
 {
 public:
-    inline ListIterator(pointer ptr) : ndpp_iterator::BasicIterator<NodeDevice>(ptr) {}
+    inline ListIterator(DataPointer ptr) : ndpp_iterator::BasicIterator<NodeDevice, ListIterator>(ptr) {}
 
     inline ListIterator& operator++() override
     {
@@ -30,6 +30,13 @@ public:
     {
         this->_t_ptr = this->_t_ptr->_prev;
         return *this;
+    }
+
+    inline ListIterator operator++(int) override
+    {
+        ListIterator temp(*this);
+        ++(*this);
+        return temp;
     }
 };
 
@@ -113,6 +120,9 @@ public:
     // Clone itself to new List.
     inline List clone() const;
 
+    // List migration.
+    inline void migrate(List &src);
+
     // Moves elements from another List.
     void splice(ListIterator position, List &src);
 
@@ -165,11 +175,23 @@ inline ListIterator List::rend() const
 
 inline NodeDevice& List::front() const
 {
+    if (!this->_head)
+    {
+        ndpp_log::logger("List.hpp", "List::front()", ndpp_log::RuntimeType::Error, 
+                         "The list is empty.", true);
+        exit(EXIT_FAILURE);
+    }
     return *this->_head;
 }
 
 inline NodeDevice& List::back() const
 {
+    if (!this->_tail)
+    {
+        ndpp_log::logger("List.hpp", "List::back()", ndpp_log::RuntimeType::Error, 
+                         "The list is empty.", true);
+        exit(EXIT_FAILURE);
+    }
     return *this->_tail;
 }
 
@@ -233,6 +255,11 @@ inline List List::clone() const
     List _dst;
     _dst.copy(*this);
     return _dst;
+}
+
+inline void List::migrate(List &src)
+{
+    DeviceMigrate(src);
 }
 
 

@@ -16,6 +16,14 @@ class ListDevice;
 }; // namespace ndpp::ndpp_list_base
 
 
+namespace ndpp_python
+{
+
+class PyListIterator;
+
+};
+
+
 /*
     NodeDevice: The node which saves generic data type, and connecting previous NodeDevice & next NodeDevice.
     P.S Node's Structure.

@@ -133,6 +133,44 @@ BOOST_PYTHON_MODULE(_ndpp_cpython)
             .def(ndppCPythonModule(std::string("migrate")).c_str(), &ndpp::ndpp_python::PyTensor::pymigrate)
             .def(ndppCPythonModule(std::string("from_tensor")).c_str(), &ndpp::ndpp_python::PyTensor::pyfromtensor)
             .def(ndppCPythonModule(std::string("from_numpy")).c_str(), &ndpp::ndpp_python::PyTensor::pyfromnumpy);
+
+
+        // Used for ndpp::ndpp_action::ListPushAction.
+        enum_<ndpp::ndpp_action::ListPushAction>(ndppCPythonModule(std::string("list_push_action")).c_str()); 
+        scope().attr(ndppCPythonModule(std::string(ndpp::ndpp_action::_FrontStr)).c_str()) = ndpp::Front;
+        scope().attr(ndppCPythonModule(std::string(ndpp::ndpp_action::_BackStr)).c_str())  = ndpp::Back;  
+
+        // ndpp::ndpp_python::PyNodeDevice: A wrapped ndpp::NodeDevice for Python.
+        // P.S  Due to no constructor for 'node', we have to wrap it without tag '_cc_'.
+        class_<ndpp::ndpp_python::PyNodeDevice>("node", no_init)
+            .def("exists", &ndpp::ndpp_python::PyNodeDevice::pyexists)
+            .def("data", &ndpp::ndpp_python::PyNodeDevice::pydata)
+            .def("prev_node", &ndpp::ndpp_python::PyNodeDevice::pyprevnode)
+            .def("next_node", &ndpp::ndpp_python::PyNodeDevice::pynextnode);
+
+        // ndpp::ndpp_python::PyListIterator: Used for PyList.
+        // P.S  Due to no constructor for 'list_iterator', we have to wrap it without tag '_cc_'.
+        class_<ndpp::ndpp_python::PyListIterator>("list_iterator", no_init)
+            .def("__iter__", &ndpp::ndpp_python::PyListIterator::pyiter, return_internal_reference<>())
+            .def("__next__", &ndpp::ndpp_python::PyListIterator::pynext);
+   
+        // ndpp::ndpp_python::PyList: A wrapped ndpp::List for Python.
+        class_<ndpp::ndpp_python::PyList>(ndppCPythonModule(std::string("list")).c_str(), init<>())
+            .def(ndppCPythonModule(std::string("iter")).c_str(), +[](ndpp::ndpp_python::PyList& self){ return self.pybegin(); })
+            .def(ndppCPythonModule(std::string("size")).c_str(), &ndpp::ndpp_python::PyList::size)
+            .def(ndppCPythonModule(std::string("clear")).c_str(), &ndpp::ndpp_python::PyList::clear)
+            .def(ndppCPythonModule(std::string("reverse")).c_str(),  &ndpp::ndpp_python::PyList::reverse)
+            .def(ndppCPythonModule(std::string("erase")).c_str(),  &ndpp::ndpp_python::PyList::pyerase)
+            .def(ndppCPythonModule(std::string("clone")).c_str(),  &ndpp::ndpp_python::PyList::pyclone)
+            .def(ndppCPythonModule(std::string("migrate")).c_str(),  &ndpp::ndpp_python::PyList::pymigrate)
+            .def(ndppCPythonModule(std::string("pop_front")).c_str(), &ndpp::ndpp_python::PyList::popFront)
+            .def(ndppCPythonModule(std::string("pop_back")).c_str(),  &ndpp::ndpp_python::PyList::popBack)
+            .def(ndppCPythonModule(std::string("front")).c_str(), &ndpp::ndpp_python::PyList::pyfront)
+            .def(ndppCPythonModule(std::string("back")).c_str(),  &ndpp::ndpp_python::PyList::pyback)
+            .def(ndppCPythonModule(std::string("splice")).c_str(),  &ndpp::ndpp_python::PyList::pysplice)
+            .def(ndppCPythonModule(std::string("insert")).c_str(),     &ndpp::ndpp_python::iInsert)
+            .def(ndppCPythonModule(std::string("push_back")).c_str(),  &ndpp::ndpp_python::iPushBack)
+            .def(ndppCPythonModule(std::string("push_front")).c_str(), &ndpp::ndpp_python::iPushFront);
     } 
     catch (const boost::python::error_already_set&)
     {
