@@ -20,13 +20,13 @@ CC_STATIC=$(DIR_CC_LIBS)libndpp.a
 
 ifeq ($(WITH_PYTHON), 1)
 # python kernel.
-PYLIB_OBJS+=_ndpp_cpython.o
+PYLIB_OBJS+=ndpp_cpython.o
 PYPACK_OBJS+=PyScalar.o PyTensor.o PyList.o
 
 # python libraries.
 CC_PY_SHARED=$(DIR_CC_LIBS)libndpp_python.so
 CC_PY_STATIC=$(DIR_CC_LIBS)libndpp_python.a
-PY_SHARED=$(DIR_PY_LIBS)_ndpp_cpython.so
+PY_SHARED=$(DIR_PY_LIBS)ndpp_cpython.so
 endif
 
 

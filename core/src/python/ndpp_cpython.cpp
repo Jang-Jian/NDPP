@@ -4,7 +4,7 @@
 #include <include/ndpp/ndpp_python.hpp>
 
 
-BOOST_PYTHON_MODULE(_ndpp_cpython)
+BOOST_PYTHON_MODULE(ndpp_cpython)
 {
     try 
     {
@@ -102,6 +102,9 @@ BOOST_PYTHON_MODULE(_ndpp_cpython)
         def(ndppCPythonModule(std::string("ones")).c_str(),  &ndpp::ndpp_python::pyones);
         def(ndppCPythonModule(std::string("full")).c_str(),  &ndpp::ndpp_python::pyfull);
 
+        // Algorithm: ndpp::ndpp_python::PyTensor sorting.
+        def(ndppCPythonModule(std::string("sort")).c_str(),  &ndpp::ndpp_python::pySort);
+
         // ndpp::ndpp_python::PyTensor: A wrapped ndpp::Tensor for Python.
         class_<ndpp::ndpp_python::PyTensor>(ndppCPythonModule(std::string("tensor")).c_str(), init<>())
             .def(ndppCPythonModule(std::string("getitem")).c_str(), &ndpp::ndpp_python::getPyTensor)
@@ -168,9 +171,21 @@ BOOST_PYTHON_MODULE(_ndpp_cpython)
             .def(ndppCPythonModule(std::string("front")).c_str(), &ndpp::ndpp_python::PyList::pyfront)
             .def(ndppCPythonModule(std::string("back")).c_str(),  &ndpp::ndpp_python::PyList::pyback)
             .def(ndppCPythonModule(std::string("splice")).c_str(),  &ndpp::ndpp_python::PyList::pysplice)
-            .def(ndppCPythonModule(std::string("insert")).c_str(),     &ndpp::ndpp_python::iInsert)
-            .def(ndppCPythonModule(std::string("push_back")).c_str(),  &ndpp::ndpp_python::iPushBack)
-            .def(ndppCPythonModule(std::string("push_front")).c_str(), &ndpp::ndpp_python::iPushFront);
+            .def(ndppCPythonModule(std::string("insert")).c_str(),     &ndpp::ndpp_python::iListInsert)
+            .def(ndppCPythonModule(std::string("push_back")).c_str(),  &ndpp::ndpp_python::iListPushBack)
+            .def(ndppCPythonModule(std::string("push_front")).c_str(), &ndpp::ndpp_python::iListPushFront);
+
+
+        // ndpp::ndpp_python::PyQueue: A wrapped ndpp::Queue for Python.
+        class_<ndpp::ndpp_python::PyQueue>(ndppCPythonModule(std::string("queue")).c_str(), init<>())
+            .def(ndppCPythonModule(std::string("size")).c_str(), &ndpp::ndpp_python::PyQueue::size)
+            .def(ndppCPythonModule(std::string("empty")).c_str(), &ndpp::ndpp_python::PyQueue::empty)
+            .def(ndppCPythonModule(std::string("pop")).c_str(), &ndpp::ndpp_python::PyQueue::pop)
+            .def(ndppCPythonModule(std::string("clone")).c_str(), &ndpp::ndpp_python::PyQueue::pyclone)
+            .def(ndppCPythonModule(std::string("front")).c_str(), &ndpp::ndpp_python::PyQueue::pyfront)
+            .def(ndppCPythonModule(std::string("back")).c_str(), &ndpp::ndpp_python::PyQueue::pyback)
+            .def(ndppCPythonModule(std::string("push")).c_str(), &ndpp::ndpp_python::iQueuePush);
+
     } 
     catch (const boost::python::error_already_set&)
     {

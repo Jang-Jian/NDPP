@@ -1,5 +1,5 @@
 from _ctypes_package import scalar_type
-from _ndpp_cpython import _cc_scalar
+from ndpp_cpython import _cc_scalar
 
 
 class scalar(_cc_scalar):

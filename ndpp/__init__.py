@@ -2,7 +2,7 @@ import os, sys
 
 sys.path.append(os.path.dirname(__file__))
 
-from _ndpp_cpython import __doc__, __version__
+from ndpp_cpython import __doc__, __version__
 
 
 from _ctypes_package import *
@@ -40,3 +40,11 @@ from _list_package import list, node, list_iterator
 list.__module__          = __name__
 node.__module__          = __name__
 list_iterator.__module__ = __name__
+
+
+from _segment_package import queue
+queue.__module__ = __name__
+
+
+from _algorithm_package import sort
+sort.__module__   = __name__

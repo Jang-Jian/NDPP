@@ -7,7 +7,7 @@ def _print_tensor(src):
     for i in range(src_shape[0]):
         for j in range(src_shape[1]):
             for k in range(src_shape[2]):
-                print(float(b[i][j][k]), ",", end="")
+                print(float(src[i][j][k]), ",", end="")
             print()
         print()
     print()

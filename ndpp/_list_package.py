@@ -1,5 +1,5 @@
-from _ndpp_cpython import _cc_list
-from _ndpp_cpython import node, list_iterator
+from ndpp_cpython import _cc_list
+from ndpp_cpython import node, list_iterator
 from _ctypes_package import list_push_action
 
 
@@ -7,15 +7,15 @@ class list(_cc_list):
     """
     list: It is a container that supports inserting generic data type, and it's implemented as a doubly-linked list.
     """
-    def __init__(self,):
+    def __init__(self):
         _cc_list.__init__(self)
 
     @staticmethod
     def _cc2py(src: _cc_list) -> "list":
         """
-        list._cc2py: Migrates _ndpp_cpython._cc_list to ndpp.list.
+        list._cc2py: Migrates ndpp_cpython._cc_list to ndpp.list.
 
-        :type src: _ndpp_cpython._cc_list
+        :type src: ndpp_cpython._cc_list
         :return: Python's ndpp.list.
         :rtype: ndpp.list.
         """

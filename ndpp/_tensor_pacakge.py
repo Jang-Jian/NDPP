@@ -1,7 +1,7 @@
 from _scalar_package import scalar
 from _ctypes_package import scalar_type, device_type, device_status, float32, host
-from _ndpp_cpython import _cc_tensor, _cc_none, _cc_reversed, \
-                          _cc_zeros, _cc_ones, _cc_full
+from ndpp_cpython import _cc_tensor, _cc_none, _cc_reversed, \
+                         _cc_zeros, _cc_ones, _cc_full, _cc_sort
 
 
 class tensor(_cc_tensor):
@@ -14,10 +14,10 @@ class tensor(_cc_tensor):
     @staticmethod
     def _cc2py(src: _cc_tensor) -> "tensor":
         """
-        _cc2py: Migrates _ndpp_cpython._cc_tensor to ndpp.tensor.
+        _cc2py: Migrates ndpp_cpython._cc_tensor to ndpp.tensor.
         
         :param src: C++'s PyTensor.
-        :type src: _ndpp_cpython._cc_tensor
+        :type src: ndpp_cpython._cc_tensor
         :return: Python's ndpp.tensor.
         :rtype: ndpp.tensor.
         """

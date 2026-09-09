@@ -83,24 +83,47 @@ All examples that we save in [Samples for C++](example/cc) & [Samples for Python
 
 ### Container.
 
-* Tensor (ndpp::Tensor): Representing a multi-dimensional array with a specific scalar type and device.
-    * [Sample code for C++](example/cc/tensor_example.cpp).
-    * [Sample code for Python](example/python/tensor_example.py).
-* Generic (ndpp::Generic): Generic data type implementation using type-erased. 
-    * [Sample code for C++](example/cc/generic_example.cpp).
-* Array (ndpp::Array): A Container that encapsulates fixed size arrays. 
-    * [Sample code for C++](example/cc/array_example.cpp).
-* List (ndpp::List): It is a container that supports inserting generic data type, and it's implemented as a doubly-linked list.
-    * [Sample code for C++](example/cc/list_example.cpp).
-    * [Sample code for Python](example/python/list_example.py).
-* Stack (ndpp::Stack): A LIFO (Last-In, First-Out) / FILO (First-In, Last-Out) data structure.
-    * [Sample code for C++](example/cc/stack_example.cpp).
-    * Wrapped via ndpp::List.
-* Queue (ndpp::Queue): A FIFO (First-In, First-Out) / LILO (Last-In, Last-Out) data structure.
-    * [Sample code for C++](example/cc/queue_example.cpp).
-    * Wrapped via ndpp::List.
+* Tensor: Representing a multi-dimensional array with a specific scalar type and device.
+    * For C++.
+        * [All API interface-1](core/include/tensor/Tensor.hpp).
+        * [All API interface-2](core/include/tensor/TensorHelper.hpp).
+        * [The sample code](example/cc/tensor_example.cpp).
+    * For Python.
+        * [All API interface of ndpp.tensor](ndpp/_tensor_pacakge.py).
+        * [The sample code](example/python/tensor_example.py).
+* Generic: Generic data type implementation using type-erased. 
+    * For C++.
+        * [ALL API interface](core/include/base/GenericBase.hpp).
+        * [The sample code](example/cc/generic_example.cpp).
+* Array: A Container that encapsulates fixed size arrays. 
+    * For C++.
+        * [All API interface](core/include/array/Array.hpp).
+        * [The sample code](example/cc/array_example.cpp).
+* List: It is a container that supports inserting generic data type, and it's implemented as a doubly-linked list.
+    * For C++.
+        * [All API interface](core/include/list/List.hpp).
+        * [The sample code](example/cc/list_example.cpp).
+    * For Python.
+        * [All API interface](ndpp/_list_pacakge.py).
+        * [The sample code](example/python/list_example.py).
+* Stack: A LIFO (Last-In, First-Out) / FILO (First-In, Last-Out) data structure.
+    * For C++.
+        * [All API interface](core/include/segment/Stack.hpp).
+        * [The sample code](example/cc/stack_example.cpp).
+* Queue: A FIFO (First-In, First-Out) / LILO (Last-In, Last-Out) data structure.
+    * For C++.
+        * [All API interface](core/include/segment/Queue.hpp).
+        * [The sample code](example/cc/queue_example.cpp).
+    * For Python.
+        * [All API interface](ndpp/_segment_package.py).
+        * [The sample code](example/python/queue_example.py).
 
 ### Algorithm.
 
-* Sorts the elements of the src tensor along a given dimension in ascending order by value (used for ndpp:Tensor).
-    * [Sample code for C++](example/cc/sort_example.cpp).
+* Sort: Sorts the elements of the src tensor along a given dimension in ascending order by value (used for ndpp:Tensor).
+    * For C++.
+        * [The API interface](core/include/algorithm/Sort.hpp).
+        * [The sample code](example/cc/sort_example.cpp).
+    * For Python.
+        * [The API interface](ndpp/_algorithm_package.py)
+        * [The sample code](example/python/sort_example.py).
