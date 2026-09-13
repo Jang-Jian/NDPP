@@ -15,14 +15,7 @@ BOOST_PYTHON_MODULE(ndpp_cpython)
         boost::python::numpy::initialize();
 
         scope().attr("__doc__") = "NDPP: Python wrapper for 'NUMERICAL DATA PIPELINE & PROCESSING'.";
-        std::string _built_tags = "Python, ";
-    #ifdef CUDA 
-        _built_tags += "CUDA";
-    #endif
-    #ifdef HALF 
-        _built_tags += ", HALF";
-    #endif
-        scope().attr("__version__") = "Built tags (Linux): " + _built_tags + ".";
+        scope().attr("__version__") = ndpp::buildInfo();
 
 
         // Creating module name.
@@ -32,18 +25,19 @@ BOOST_PYTHON_MODULE(ndpp_cpython)
             return std::string("_cc_") + name;
         };
 
+
+        // CUDA settings.
     #ifdef CUDA
         def(ndppCPythonModule(std::string("set_cuda_device")).c_str(), &ndpp::ndpp_python::setCudaDevice);
         def(ndppCPythonModule(std::string("get_cuda_devices")).c_str(), &ndpp::ndpp_python::getCudaDevices);
     #endif
         def(ndppCPythonModule(std::string("check_cuda")).c_str(), &ndpp::ndpp_python::checkCuda);
-    
 
+        
         // Used for ndpp::ndpp_memory::DeviceStatus.
         enum_<ndpp::ndpp_memory::DeviceStatus>(ndppCPythonModule(std::string("device_status")).c_str()); 
         scope().attr(ndppCPythonModule(std::string(ndpp::ndpp_memory::_AllocationStr)).c_str()) = ndpp::Allocation;
         scope().attr(ndppCPythonModule(std::string(ndpp::ndpp_memory::_ReferenceStr)).c_str())  = ndpp::Reference;
-
 
         // Used for ndpp::ndpp_memory::ScalarType.
         enum_<ndpp::ndpp_memory::ScalarType>(ndppCPythonModule(std::string("scalar_type")).c_str()); 
@@ -61,7 +55,6 @@ BOOST_PYTHON_MODULE(ndpp_cpython)
         scope().attr(ndppCPythonModule(std::string(ndpp::ndpp_memory::_Float32Str)).c_str()) = ndpp::Float32;
         scope().attr(ndppCPythonModule(std::string(ndpp::ndpp_memory::_Float64Str)).c_str()) = ndpp::Float64;
         scope().attr(ndppCPythonModule(std::string(ndpp::ndpp_memory::_BoolStr)).c_str())    = ndpp::Bool;
-
 
         // Used for ndpp::ndpp_log::RuntimeType.
         enum_<ndpp::ndpp_log::RuntimeType>(ndppCPythonModule(std::string("runtime_type")).c_str()); 
@@ -182,11 +175,21 @@ BOOST_PYTHON_MODULE(ndpp_cpython)
             .def(ndppCPythonModule(std::string("empty")).c_str(), &ndpp::ndpp_python::PyQueue::empty)
             .def(ndppCPythonModule(std::string("pop")).c_str(), &ndpp::ndpp_python::PyQueue::pop)
             .def(ndppCPythonModule(std::string("clone")).c_str(), &ndpp::ndpp_python::PyQueue::pyclone)
+            .def(ndppCPythonModule(std::string("move_from")).c_str(), &ndpp::ndpp_python::PyQueue::pymovefrom)
             .def(ndppCPythonModule(std::string("front")).c_str(), &ndpp::ndpp_python::PyQueue::pyfront)
             .def(ndppCPythonModule(std::string("back")).c_str(), &ndpp::ndpp_python::PyQueue::pyback)
             .def(ndppCPythonModule(std::string("push")).c_str(), &ndpp::ndpp_python::iQueuePush);
 
-    } 
+        // ndpp::ndpp_python::PyStack: A wrapped ndpp::Stack for Python.
+        class_<ndpp::ndpp_python::PyStack>(ndppCPythonModule(std::string("stack")).c_str(), init<>())
+            .def(ndppCPythonModule(std::string("size")).c_str(), &ndpp::ndpp_python::PyStack::size)
+            .def(ndppCPythonModule(std::string("empty")).c_str(), &ndpp::ndpp_python::PyStack::empty)
+            .def(ndppCPythonModule(std::string("pop")).c_str(), &ndpp::ndpp_python::PyStack::pop)
+            .def(ndppCPythonModule(std::string("clone")).c_str(), &ndpp::ndpp_python::PyStack::pyclone)
+            .def(ndppCPythonModule(std::string("move_from")).c_str(), &ndpp::ndpp_python::PyStack::pymovefrom)
+            .def(ndppCPythonModule(std::string("top")).c_str(), &ndpp::ndpp_python::PyStack::pytop)
+            .def(ndppCPythonModule(std::string("push")).c_str(), &ndpp::ndpp_python::iStackPush);
+    }
     catch (const boost::python::error_already_set&)
     {
         PyErr_Print(); 

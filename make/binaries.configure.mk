@@ -2,12 +2,13 @@ include make/make.configure.mk
 
 
 # https://stackoverflow.com/questions/9446634/makefile-vpath-not-working-for-header-files
-VPATH=core/src/logging:core/src/array:core/src/base:core/src/tensor:core/src/algorithm:core/src/list:core/src/python
+VPATH=core/src/ndpp:core/src/logging:core/src/array:core/src/base:core/src/tensor:core/src/algorithm:core/src/list:core/src/python
 
 CC_EXAMPLE=example/cc
 
 # cc kernel.
-KERNEL_OBJS=Logging.o GenericBase.o ArrayStype.o ScalarType.o DataArch.o DataProc.o TensorBase.o Tensor.o TensorArithmeticFwd.o Sort.o ListBase.o List.o ListHelper.o
+KERNEL_OBJS=Build.o Logging.o GenericBase.o ArrayStype.o ScalarType.o DataArch.o DataProc.o \
+			TensorBase.o Tensor.o TensorArithmeticFwd.o Sort.o ListBase.o List.o ListHelper.o
 ifeq ($(WITH_CUDA), 1)
 KERNEL_OBJS+=GpuDataProc.o GpuTensorArithmeticFwd.o
 endif
@@ -31,4 +32,5 @@ endif
 
 
 # example.
-EXEAMPLE_OBJS=array_example.o generic_example.o scalar_example.o tensor_example.o sort_example.o list_example.o stack_example.o queue_example.o
+EXEAMPLE_OBJS=array_example.o generic_example.o scalar_example.o tensor_example.o \
+			  sort_example.o list_example.o stack_example.o queue_example.o

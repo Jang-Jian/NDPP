@@ -12,14 +12,14 @@ NUMERICAL DATA PIPELINE & PROCESSING.
 
 Here is all flags you could configure for compilation.
 
-* WITH_CUDA: Supprting the NVIDIA CUDA use (WITH_CUDA=1).
-* WITH_HALF: Supprting the float16(half) use (WITH_HALF=1).
+* WITH_CUDA: Uses `WITH_CUDA=1` for supporting cuda.
+* WITH_HALF: Uses `WITH_HALF=1` for supporting the float16(half).
 * WITH_CUDA_SM: If WITH_CUDA=1 & WITH_HALF=1, it will enable this flag. Please follow the below how to type correct cuda sm number inside.
-    * WITH_CUDA_ARCH: Please choose the lowest CUDA SM code from group WITH_CUDA_SM.
-    * Rule: If SM{id} or SM_{id}, compute_{id}, you could type WITH_CUDA_SM={id}.
+    * WITH_CUDA_ARCH: Please choose the lowest CUDA SM code from group `WITH_CUDA_SM`.
+    * Rule: If SM{id} or SM_{id}, compute_{id}, you could type `WITH_CUDA_SM={id}`.
     * Reference: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
 
-* WITH_PYTHON: Supprting the python use (WITH_PYTHON=1).
+* WITH_PYTHON: Uses `WITH_PYTHON=1` for supporting the python.
 
 ### Example: building command.
 
@@ -41,8 +41,8 @@ make -j2 WITH_CUDA=1 WITH_HALF=1 WITH_CUDA_SM=80,86,87 WITH_CUDA_ARCH=80
 
 ### If WITH_PYTHON=1.
 
-* boost.
 * python.
+* boost.python.
 
 ## NDPP SDK installation & uninstallation.
 
@@ -110,12 +110,15 @@ All examples that we save in [Samples for C++](example/cc) & [Samples for Python
     * For C++.
         * [All API interface](core/include/segment/Stack.hpp).
         * [The sample code](example/cc/stack_example.cpp).
+    * For Python.
+        * [All API interface](ndpp/_stack_package.py).
+        * [The sample code](example/python/stack_example.py).
 * Queue: A FIFO (First-In, First-Out) / LILO (Last-In, Last-Out) data structure.
     * For C++.
         * [All API interface](core/include/segment/Queue.hpp).
         * [The sample code](example/cc/queue_example.cpp).
     * For Python.
-        * [All API interface](ndpp/_segment_package.py).
+        * [All API interface](ndpp/_queue_package.py).
         * [The sample code](example/python/queue_example.py).
 
 ### Algorithm.

@@ -3,12 +3,15 @@
 
 #include <include/ndpp/ndpp.hpp>
 
+#include <include/ndpp/Build.hpp>
 #include <include/python/PyList.hpp>
 #include <include/python/PyScalar.hpp>
 #include <include/python/PyHelper.hpp>
 #include <include/python/PyTensor.hpp>
 #include <include/python/PyQueue.hpp>
+#include <include/python/PyStack.hpp>
 #include <include/python/PyQueueProc.hpp>
+#include <include/python/PyStackProc.hpp>
 #include <include/python/PyListProc.hpp>
 #include <include/python/PyTensorProc.hpp>
 #include <include/python/PyExtension.hpp>

@@ -42,6 +42,10 @@ public:
     // Pushes the given element value to the top of the stack (used for copy constructor).
     inline void push(const Generic &object);
 
+    // Moves all data from outside.
+    // P.S This action is same as List::migrate().
+    inline void moveFrom(Stack &src);
+
     // Accesses the top element.
     inline Generic& top() const;
 
@@ -88,6 +92,11 @@ inline void Stack::push(Generic &&object)
 inline void Stack::push(const Generic &object)
 {
     pushFront(object);
+}
+
+inline void Stack::moveFrom(Stack &src)
+{
+    migrate(src);
 }
 
 inline Generic& Stack::top() const

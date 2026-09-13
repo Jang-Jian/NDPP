@@ -183,10 +183,10 @@ class tensor(_cc_tensor):
     
     def migrate(self, src: "tensor"):
         """
-        tensor.migrate: tensor migration. \n
+        tensor.migrate: Tensor migration. \n
         P.S The src will be clean after this call.
 
-        :param src: Source of ndpp.tensor.
+        :param src: The source of ndpp.tensor.
         :type src: ndpp.tensor.
         """
         self._cc_migrate(src)
@@ -198,7 +198,7 @@ class tensor(_cc_tensor):
         tensor.from_tensor: Copy data from ndpp.tensor. \n
         P.S If the copy_status is ndpp.reference, the dst_dtype doesn't work.
         
-        :param src: Source of ndpp.tensor.
+        :param src: The source of ndpp.tensor.
         :type src: ndpp.tensor.
         :param dst_dtype: Destination of device type.
         :type dst_dtype: ndpp.device_type.

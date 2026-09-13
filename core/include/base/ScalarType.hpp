@@ -206,7 +206,7 @@ struct ScalarPtrCuDevAccessor
     T operator()(const T *src, const ScalarType stype, const int64_t pos,
                   const string &file_name, const string &method_name) const 
     {
-        T _data = static_cast<T>(0);
+        T _data = static_cast<T>(0.0f);
         mixMemoryCopy((T*)scalarPtrShift(src, stype, pos), 
                       DeviceType::CudaDevice, &_data, DeviceType::Host, 1, 
                       file_name, method_name);
@@ -228,7 +228,7 @@ inline T scalarPtrAccess(const void *src, const ScalarType stype, const DeviceTy
         exit(EXIT_FAILURE);
     }
 
-    T data = static_cast<T>(0);
+    T data = static_cast<T>(0.0f);
 
     switch (dtype)
     {
@@ -241,42 +241,42 @@ inline T scalarPtrAccess(const void *src, const ScalarType stype, const DeviceTy
             switch (stype)
             {
                 case ScalarType::UInt8:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::UInt8>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::UInt8>::type*)scalarPtrShift(src, stype, pos)));
                     break;
                 case ScalarType::UInt16:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::UInt16>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::UInt16>::type*)scalarPtrShift(src, stype, pos)));
                     break;
                 case ScalarType::UInt32:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::UInt32>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::UInt32>::type*)scalarPtrShift(src, stype, pos)));
                     break;
                 case ScalarType::UInt64:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::UInt64>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::UInt64>::type*)scalarPtrShift(src, stype, pos)));
                     break;
                 case ScalarType::Int8:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::Int8>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::Int8>::type*)scalarPtrShift(src, stype, pos)));
                     break;
                 case ScalarType::Int16:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::Int16>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::Int16>::type*)scalarPtrShift(src, stype, pos)));
                     break;
                 case ScalarType::Int32:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::Int32>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::Int32>::type*)scalarPtrShift(src, stype, pos)));
                     break;
                 case ScalarType::Int64:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::Int64>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::Int64>::type*)scalarPtrShift(src, stype, pos)));
                     break;
             #ifdef HALF
                 case ScalarType::Float16:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::Float16>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::Float16>::type*)scalarPtrShift(src, stype, pos)));
                     break;
             #endif                 
                 case ScalarType::Float32:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::Float32>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::Float32>::type*)scalarPtrShift(src, stype, pos)));
                     break;
                 case ScalarType::Float64:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::Float64>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::Float64>::type*)scalarPtrShift(src, stype, pos)));
                     break;
                 case ScalarType::Bool:
-                    data = static_cast<T>(*(ScalarTypeToCppType<ScalarType::Bool>::type*)scalarPtrShift(src, stype, pos));
+                    data = static_cast<T>(static_cast<double>(*(ScalarTypeToCppType<ScalarType::Bool>::type*)scalarPtrShift(src, stype, pos)));
                     break;
             }
             break;
@@ -287,42 +287,42 @@ inline T scalarPtrAccess(const void *src, const ScalarType stype, const DeviceTy
                 switch (stype)
                 {
                     case ScalarType::UInt8:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::UInt8>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::UInt8>::type*)src, stype, pos,file_name, method_name))));
                         break;
                     case ScalarType::UInt16:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::UInt16>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::UInt16>::type*)src, stype, pos,file_name, method_name))));
                         break;
                     case ScalarType::UInt32:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::UInt32>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::UInt32>::type*)src, stype, pos,file_name, method_name))));
                         break;
                     case ScalarType::UInt64:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::UInt64>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::UInt64>::type*)src, stype, pos,file_name, method_name))));
                         break;
                     case ScalarType::Int8:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Int8>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::Int8>::type*)src, stype, pos,file_name, method_name))));
                         break;
                     case ScalarType::Int16:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Int16>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::Int16>::type*)src, stype, pos,file_name, method_name))));
                         break;
                     case ScalarType::Int32:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Int32>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::Int32>::type*)src, stype, pos,file_name, method_name))));
                         break;
                     case ScalarType::Int64:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Int64>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::Int64>::type*)src, stype, pos,file_name, method_name))));
                         break;
                 #ifdef HALF
                     case ScalarType::Float16:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Float16>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::Float16>::type*)src, stype, pos,file_name, method_name))));
                         break;
                 #endif                       
                     case ScalarType::Float32:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Float32>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::Float32>::type*)src, stype, pos,file_name, method_name))));
                         break;
                     case ScalarType::Float64:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Float64>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::Float64>::type*)src, stype, pos,file_name, method_name))));
                         break;
                     case ScalarType::Bool:
-                        data = static_cast<T>(accessor((ScalarTypeToCppType<ScalarType::Bool>::type*)src, stype, pos,file_name, method_name));
+                        data = static_cast<T>(static_cast<double>((accessor((ScalarTypeToCppType<ScalarType::Bool>::type*)src, stype, pos,file_name, method_name))));
                         break;
                 }
             }

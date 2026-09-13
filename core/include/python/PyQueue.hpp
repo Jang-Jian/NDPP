@@ -24,8 +24,10 @@ public:
     inline PyQueue(const PyQueue &src);
 
     virtual ~PyQueue() = default;
-
+    
     inline PyQueue pyclone() const;
+
+    inline void pymovefrom(PyQueue &src);
 
     inline void pypush(boost::python::object &&object);
     inline void pypush(const boost::python::object &object);
@@ -55,6 +57,11 @@ inline PyQueue PyQueue::pyclone() const
 {
     Queue _dst = clone();
     return PyQueue(std::move(_dst));
+}
+
+inline void PyQueue::pymovefrom(PyQueue &src)
+{
+    moveFrom(src);
 }
 
 inline void PyQueue::pypush(boost::python::object &&object)
