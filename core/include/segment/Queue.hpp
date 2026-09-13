@@ -42,6 +42,10 @@ public:
     // Pushes the given element value to the end of the queue. (used for copy constructor).
     inline void push(const Generic &object);
 
+    // Moves all data from outside.
+    // P.S This action is same as List::migrate().
+    inline void moveFrom(Queue &src);
+
     // Accesses the first element.
     inline Generic& front() const;
 
@@ -91,6 +95,11 @@ inline void Queue::push(Generic &&object)
 inline void Queue::push(const Generic &object)
 {
     pushBack(object);
+}
+
+inline void Queue::moveFrom(Queue &src)
+{
+    migrate(src);
 }
 
 inline Generic& Queue::front() const

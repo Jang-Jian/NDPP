@@ -14,7 +14,9 @@ PY_KERNELS := $(addprefix $(DIR_PYTHON_OBJS), $(PYPACK_OBJS))
 PYLIB_OBJS := $(addprefix $(DIR_PYTHON_OBJS), $(PYLIB_OBJS))
 EXEAMPLE_OBJS := $(addprefix $(DIR_EXE_OBJS), $(EXEAMPLE_OBJS))
 EXEAMPLES := $(addprefix $(DIR_EXES), $(patsubst %.o,%,$(notdir $(EXEAMPLE_OBJS))))
+NDPP_IN_PATH := $(shell whereis $(INSTALLED_CC_LIBS))
 
+#SHELL := /bin/bash
 
 all: obj $(CC_STATIC) $(CC_SHARED) $(EXEAMPLE_OBJS) $(EXEAMPLES) $(CC_PY_STATIC) $(CC_PY_SHARED) $(PY_SHARED)
 
@@ -27,12 +29,20 @@ install:
 	mkdir -p $(INSTALLED_CC_LIBS)
 	cp -r core/include $(INSTALLED_CC_LIBS)
 	cp -r $(DIR_CC_LIBS) $(INSTALLED_CC_LIBS)
+ifeq ($(NDPP_IN_PATH), ndpp:) # If there is no ndpp's global path (saved in /etc/profile). it will be added automatically.
+	echo 'export PATH=$(PATH):$(INSTALLED_CC_LIBS)' | tee -a /etc/profile
+	source /etc/profile
+endif
 ifeq ($(WITH_PYTHON), 1)
 	cp -r $(DIR_PY_LIBS) /usr/local/lib/python$(PY3_VER)/dist-packages
 endif
 
 uninstall:
 	rm -rf $(INSTALLED_CC_LIBS)
+ifneq ($(NDPP_IN_PATH), ndpp:)
+	sed -i '\#$(INSTALLED_CC_LIBS)#d' /etc/profile
+	source /etc/profile
+endif
 ifeq ($(WITH_PYTHON), 1)
 	rm -rf /usr/local/lib/python$(PY3_VER)/dist-packages/$(DIR_PY_LIBS)
 endif

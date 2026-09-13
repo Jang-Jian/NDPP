@@ -15,32 +15,33 @@ namespace ndpp
 namespace ndpp_arithmetic
 {
 
-/*
-    Arithmetic Operator (V2) using template specialization.
-*/
-#define NDPP_DEFINE_BINARY_OP(OperatorName, Basic_Expr, Bool_Expr)    \
-struct OperatorName                                                   \
-{                                                                     \
-    template<typename T1, typename T2>                                \
-    ndppInline T1 operator()(T1 lhs, T2 rhs) const                    \
-    {                                                                 \
-        const T1 _rhs = static_cast<T1>(rhs);                         \
-        return (Basic_Expr);                                          \
-    }                                                                 \
-                                                                      \
-    template<typename T>                                              \
-    ndppInline bool operator()(bool lhs, T rhs) const                 \
-    {                                                                 \
-        const bool _rhs = static_cast<bool>(rhs);                     \
-        return (Bool_Expr);                                           \
-    }                                                                 \
+// Arithmetic Operator (V2) using template specialization.
+#define NDPP_DEFINE_BINARY_OP(OperatorName, Basic_Expr, Bool_Expr)     \
+struct OperatorName                                                    \
+{                                                                      \
+    template<typename T1, typename T2>                                 \
+    ndppInline T1 operator()(T1 lhs, T2 rhs) const                     \
+    {                                                                  \
+        const T1 _rhs = static_cast<T1>(static_cast<double>(rhs));     \
+        return (Basic_Expr);                                           \
+    }                                                                  \
+                                                                       \
+    template<typename T>                                               \
+    ndppInline bool operator()(bool lhs, T rhs) const                  \
+    {                                                                  \
+        const bool _rhs = static_cast<bool>(static_cast<double>(rhs)); \
+        return (Bool_Expr);                                            \
+    }                                                                  \
 };
 
+constexpr const double _ZeroFp64 = 0.0;
 NDPP_DEFINE_BINARY_OP(AddOp, lhs + _rhs, lhs || _rhs) 
 NDPP_DEFINE_BINARY_OP(SubOp, lhs - _rhs, lhs - _rhs)
 NDPP_DEFINE_BINARY_OP(MulOp, lhs * _rhs, lhs && _rhs)
-NDPP_DEFINE_BINARY_OP(DivOp, (lhs != T1(0) && _rhs != T1(0)) ? (lhs / _rhs) : static_cast<T1>(0), (lhs != false && _rhs != false) ? (lhs / _rhs) : false)
-NDPP_DEFINE_BINARY_OP(FloorDivOp, (lhs != T1(0) && _rhs != T1(0)) ? static_cast<T1>(floor(static_cast<double>(lhs / _rhs))) : static_cast<T1>(0), (lhs != false && _rhs != false) ? (lhs / _rhs) : false)
+NDPP_DEFINE_BINARY_OP(DivOp, (lhs != static_cast<T1>(_ZeroFp64) && _rhs != static_cast<T1>(_ZeroFp64)) ? static_cast<T1>(lhs / _rhs) : static_cast<T1>(_ZeroFp64), 
+                             (lhs != false && _rhs != false) ? (lhs / _rhs) : false)
+NDPP_DEFINE_BINARY_OP(FloorDivOp, (lhs != static_cast<T1>(_ZeroFp64) && _rhs != static_cast<T1>(_ZeroFp64)) ? static_cast<T1>(floor(static_cast<double>(lhs / _rhs))) : static_cast<T1>(_ZeroFp64), 
+                                  (lhs != false && _rhs != false) ? bool(lhs / _rhs) : false)
 
 
 

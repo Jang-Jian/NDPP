@@ -1,5 +1,5 @@
 from _ctypes_package import runtime_type
-from _ndpp_cpython import _cc_logger
+from ndpp_cpython import _cc_logger
 
 
 def logger(file_name: str, method_name: str, level: runtime_type, 

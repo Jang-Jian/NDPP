@@ -1,7 +1,7 @@
 from _scalar_package import scalar
 from _ctypes_package import scalar_type, device_type, device_status, float32, host
-from _ndpp_cpython import _cc_tensor, _cc_none, _cc_reversed, \
-                          _cc_zeros, _cc_ones, _cc_full
+from ndpp_cpython import _cc_tensor, _cc_none, _cc_reversed, \
+                         _cc_zeros, _cc_ones, _cc_full, _cc_sort
 
 
 class tensor(_cc_tensor):
@@ -14,10 +14,10 @@ class tensor(_cc_tensor):
     @staticmethod
     def _cc2py(src: _cc_tensor) -> "tensor":
         """
-        _cc2py: Migrates _ndpp_cpython._cc_tensor to ndpp.tensor.
+        _cc2py: Migrates ndpp_cpython._cc_tensor to ndpp.tensor.
         
         :param src: C++'s PyTensor.
-        :type src: _ndpp_cpython._cc_tensor
+        :type src: ndpp_cpython._cc_tensor
         :return: Python's ndpp.tensor.
         :rtype: ndpp.tensor.
         """
@@ -183,10 +183,10 @@ class tensor(_cc_tensor):
     
     def migrate(self, src: "tensor"):
         """
-        tensor.migrate: tensor migration. \n
+        tensor.migrate: Tensor migration. \n
         P.S The src will be clean after this call.
 
-        :param src: Source of ndpp.tensor.
+        :param src: The source of ndpp.tensor.
         :type src: ndpp.tensor.
         """
         self._cc_migrate(src)
@@ -198,7 +198,7 @@ class tensor(_cc_tensor):
         tensor.from_tensor: Copy data from ndpp.tensor. \n
         P.S If the copy_status is ndpp.reference, the dst_dtype doesn't work.
         
-        :param src: Source of ndpp.tensor.
+        :param src: The source of ndpp.tensor.
         :type src: ndpp.tensor.
         :param dst_dtype: Destination of device type.
         :type dst_dtype: ndpp.device_type.

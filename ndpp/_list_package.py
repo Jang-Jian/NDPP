@@ -1,5 +1,5 @@
-from _ndpp_cpython import _cc_list
-from _ndpp_cpython import node, list_iterator
+from ndpp_cpython import _cc_list
+from ndpp_cpython import node, list_iterator
 from _ctypes_package import list_push_action
 
 
@@ -7,15 +7,15 @@ class list(_cc_list):
     """
     list: It is a container that supports inserting generic data type, and it's implemented as a doubly-linked list.
     """
-    def __init__(self,):
+    def __init__(self):
         _cc_list.__init__(self)
 
     @staticmethod
     def _cc2py(src: _cc_list) -> "list":
         """
-        list._cc2py: Migrates _ndpp_cpython._cc_list to ndpp.list.
+        list._cc2py: Migrates ndpp_cpython._cc_list to ndpp.list.
 
-        :type src: _ndpp_cpython._cc_list
+        :type src: ndpp_cpython._cc_list
         :return: Python's ndpp.list.
         :rtype: ndpp.list.
         """
@@ -28,30 +28,30 @@ class list(_cc_list):
 
     def size(self) -> int:
         """
-        Docstring for size
+        list.size: Returns the number of elements.
 
-        :return: Description
-        :rtype: int
+        :return: self dimension.
+        :rtype: int.
         """
         return self._cc_size()
     
     def clear(self):
         """
-        Docstring for clear
+        list.clear: Clears the contents.
         """
         self._cc_clear()
 
     def erase(self, position: int):
         """
-        Docstring for erase
+        list.erase: Erases element via specified location..
         
-        :param position: Description
+        :param position: The index of position.
         """
         self._cc_erase(position)
 
     def clone(self) -> "list":
         """
-        Docstring for clone
+        list.clone: Clone itself to new List.
         
         :param self: Description
         :return: Description
@@ -61,90 +61,89 @@ class list(_cc_list):
                                                
     def migrate(self, src: "list"):
         """
-        Docstring for migrate
+        list.clone: List migration. \n
+        P.S The src will be clean after this call.
 
-        :param src: Description
-        :type src: "list"
+        :param src: Source of ndpp.list.
+        :type src: ndpp.list.
         """
         self._cc_migrate(src)
 
     def pop_front(self):
         """
-        Docstring for pop_front.
+        list.pop_front: Removes the first element.
         """
         self._cc_pop_front()
 
     def pop_back(self):
         """
-        Docstring for pop_back.
+        list.pop_back: Removes the last element.
         """
         self._cc_pop_back()
     
     def front(self) -> object:
         """
-        Docstring for front
-        
-        :param self: Description
-        :return: Description
-        :rtype: object
+        list.front: Returns a reference to the first element in the container.
+
+        :return: The data which saved in first element.
+        :rtype: object.
         """
         return self._cc_front()
     
     def back(self) -> object:
         """
-        Docstring for back
+        list.back: Returns a reference to the last element in the container.
         
-        :return: Description
-        :rtype: object
+        :return: The data which saved in last element.
+        :rtype: object.
         """
         return self._cc_back()
 
     def insert(self, position: int, obj: object, action: list_push_action):
         """
-        Docstring for insert
+        list.insert: Insert the node in front/rear of specified location.
 
-        :param position: Description
-        :type position: int
-        :param obj: Description
-        :type obj: object
-        :param action: Description
-        :type action: list_push_action
+        :param position: The index of position.
+        :type position: int.
+        :param obj: The source of object.
+        :type obj: object.
+        :param action: The action for pushing new data.
+        :type action: ndpp.list_push_action.
         """
         _cc_list._cc_insert(self, position, obj, action)
 
     def reverse(self):
         """
-        Docstring for reverse
+        list.reverse: Reverses the order of the elements in the container.
         """
         self._cc_reverse()
 
     def splice(self, position: int, src: "list"):
         """
-        Docstring for splice
+        list.splice: Moves elements from another List. \n
+        P.S The src will be clean after this call.
         
-        :param self: Description
-        :param position: Description
-        :type position: int
-        :param src: Description
-        :type src: "list"
+        :param position: The index of position.
+        :type position: int.
+        :param src: The source of ndpp.list.
+        :type src: ndpp.list.
         """
         self._cc_splice(position, src)
 
     def push_back(self, obj: object):
         """
-        Docstring for push_back
+        list.push_back: Adds an element to the end.
         
-        :param obj: Description
-        :type obj: object
+        :param obj: The source of object.
+        :type obj: object.
         """
         _cc_list._cc_push_back(self, obj)
 
     def push_front(self, obj: object):
         """
-        Docstring for push_front
+        list.push_front: Inserts an element to the beginning.
         
-        :param self: Description
-        :param obj: Description
-        :type obj: object
+        :param obj: The source of object.
+        :type obj: object.
         """
         _cc_list._cc_push_front(self, obj)

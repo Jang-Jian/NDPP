@@ -14,9 +14,12 @@ namespace ndpp_python
     PyListIterator: The basic iterator which is used for Python-C++ object iteration.
     P.S Please inherit this object and override these virtual operators: 
         1. PyBasicIterator::operator*().
-        1. PyBasicIterator::operator++().
-        2. PyBasicIterator::operator--().
-        2. PyBasicIterator::operator--(int).
+        2. PyBasicIterator::operator++().
+        3. PyBasicIterator::operator--().
+        4. PyBasicIterator::operator--(int).
+        5. PyBasicIterator::pyiter().
+        6. PyBasicIterator::pynext().
+
 */
 template<class CcData, class PyData, class DerivedIterator>
 class PyBasicIterator
@@ -44,7 +47,7 @@ public:
     inline bool operator!=(const DerivedIterator &b) const { return this->_t_ptr != b._t_ptr; }
 
     // Used for Python __iter__.
-    virtual DerivedIterator& pyiter();
+    virtual DerivedIterator& pyiter() = 0;
 
     // Used for Python __next__.
     virtual PyDataType pynext() = 0;
