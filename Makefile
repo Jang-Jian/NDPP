@@ -15,8 +15,17 @@ PYLIB_OBJS := $(addprefix $(DIR_PYTHON_OBJS), $(PYLIB_OBJS))
 EXEAMPLE_OBJS := $(addprefix $(DIR_EXE_OBJS), $(EXEAMPLE_OBJS))
 EXEAMPLES := $(addprefix $(DIR_EXES), $(patsubst %.o,%,$(notdir $(EXEAMPLE_OBJS))))
 NDPP_IN_PATH := $(shell whereis $(INSTALLED_CC_LIBS))
-
 #SHELL := /bin/bash
+
+define CHECK_LIB_EXISTS
+	ifeq ($$(wildcard $(1)),)
+		$(info $(1) doesn't exist. Please build this library or check your building-command first.)
+		$(2) := 0
+	else
+		$(2) := 1
+	endif
+endef
+
 
 all: obj $(CC_STATIC) $(CC_SHARED) $(EXEAMPLE_OBJS) $(EXEAMPLES) $(CC_PY_STATIC) $(CC_PY_SHARED) $(PY_SHARED)
 
@@ -25,15 +34,32 @@ obj:
 	mkdir -p $(DIR_CC_LIBS)
 	mkdir -p $(DIR_EXES)
 
-install:
-	mkdir -p $(INSTALLED_CC_LIBS)
+install: #CC_SHARED_EXIST:=$(call CHECK_LIB_EXISTS,$(CC_SHARED))
+	$(eval $(call CHECK_LIB_EXISTS,$(CC_STATIC),CC_STATIC_EXIST))
+	$(eval $(call CHECK_LIB_EXISTS,$(CC_SHARED),CC_SHARED_EXIST))
+	@echo "Value of CC_STATIC_EXIST is: $(CC_STATIC_EXIST)"
+	@echo "Value of CC_SHARED_EXIST is: $(CC_SHARED_EXIST)"
+
+ifeq ($(CC_STATIC_EXIST)$(CC_SHARED_EXIST),1)
+   	mkdir -p $(INSTALLED_CC_LIBS)
 	cp -r core/include $(INSTALLED_CC_LIBS)
 	cp -r $(DIR_CC_LIBS) $(INSTALLED_CC_LIBS)
+endif
+
 ifeq ($(NDPP_IN_PATH), ndpp:) # If there is no ndpp's global path (saved in /etc/profile). it will be added automatically.
 	echo 'export PATH=$(PATH):$(INSTALLED_CC_LIBS)' | tee -a /etc/profile
 	source /etc/profile
 endif
 ifeq ($(WITH_PYTHON), 1)
+ifeq ("$(wildcard $(CC_PY_STATIC))","")
+	$(info $(CC_PY_STATIC) doesn't exist. Please build this library or check your building-command first.)
+endif
+ifeq ("$(wildcard $(CC_PY_SHARED))","")
+	$(info $(CC_PY_SHARED) doesn't exist. Please build this library or check your building-command first.)
+endif
+ifeq ("$(wildcard $(PY_SHARED))","")
+	$(info $(PY_SHARED) doesn't exist. Please build this library or check your building-command first.)
+endif
 	cp -r $(DIR_PY_LIBS) /usr/local/lib/python$(PY3_VER)/dist-packages
 endif
 
