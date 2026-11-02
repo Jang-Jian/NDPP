@@ -105,6 +105,15 @@ class tensor(_cc_tensor):
         :rtype: int.
         """
         return self._cc_allocations()
+
+    def requires_grad(self) -> bool:
+        """
+        tensor.requires_grad: Confirm the grad whether it exists. \n
+
+        :return: self allocated size.
+        :rtype: bool.
+        """
+        return self._cc_requires_grad()
     
     def scalar(self) -> scalar_type:
         """
@@ -156,6 +165,15 @@ class tensor(_cc_tensor):
         tensor.destory: Deallocate the memory.
         """
         self._cc_destory()
+
+    def grad(self) -> "tensor":
+        """
+        tensor.grad: Direct access to the underlying contiguous storage (grad). \n
+
+        :return: self gradient.
+        :rtype: ndpp.tensor.
+        """
+        return tensor._cc2py(self._cc_grad())
     
     def clone(self, dtype: device_type) -> "tensor":
         """
@@ -227,7 +245,7 @@ class tensor(_cc_tensor):
         self._cc_from_numpy(src, src_dtype, dst_dtype, copy_status)
 
 
-def zeros(size: tuple, scalar_t: scalar_type = float32, device_t: device_type = host) -> tensor:
+def zeros(size: tuple, scalar_t: scalar_type = float32, device_t: device_type = host, requires_grad: bool = False) -> tensor:
     """
     zeros: Returns a tensor filled with the scalar value 0, with the shape defined by the variable argument.
     
@@ -237,13 +255,15 @@ def zeros(size: tuple, scalar_t: scalar_type = float32, device_t: device_type = 
     :type scalar_t: ndpp.scalar_type.
     :param device_t: Destination of device type (default: ndpp.host).
     :type device_t: ndpp.device_type.
+    :param requires_grad: Requires gradient (default: False).
+    :type requires_grad: bool.
     :return: The new tensor.
     :rtype: ndpp.tensor
     """
-    return tensor._cc2py(_cc_zeros(size, scalar_t, device_t))
+    return tensor._cc2py(_cc_zeros(size, scalar_t, device_t, requires_grad))
 
 
-def ones(size: tuple, scalar_t: scalar_type = float32, device_t: device_type = host) -> tensor:
+def ones(size: tuple, scalar_t: scalar_type = float32, device_t: device_type = host, requires_grad: bool = False) -> tensor:
     """
     onces:  Returns a tensor filled with the scalar value 1, with the shape defined by the variable argument.
     
@@ -253,13 +273,16 @@ def ones(size: tuple, scalar_t: scalar_type = float32, device_t: device_type = h
     :type scalar_t: ndpp.scalar_type.
     :param device_t: Destination of device type (default: ndpp.host).
     :type device_t: ndpp.device_type.
+    :param requires_grad: Requires gradient (default: False).
+    :type requires_grad: bool.
     :return: The new tensor.
     :rtype: ndpp.tensor.
     """
-    return tensor._cc2py(_cc_ones(size, scalar_t, device_t))
+    return tensor._cc2py(_cc_ones(size, scalar_t, device_t, requires_grad))
 
 
-def full(fill_value: "numbers.Number", size: tuple, scalar_t: scalar_type = float32, device_t: device_type = host) -> tensor:
+def full(fill_value: "numbers.Number", size: tuple, scalar_t: scalar_type = float32, 
+         device_t: device_type = host, requires_grad: bool = False) -> tensor:
     """
     full: Returns a tensor filled with the scalar value 1, with the shape defined by the variable argument.
     
@@ -271,7 +294,9 @@ def full(fill_value: "numbers.Number", size: tuple, scalar_t: scalar_type = floa
     :type scalar_t: ndpp.scalar_type.
     :param device_t: Destination of device type (default: ndpp.host).
     :type device_t: ndpp.device_type.
+    :param requires_grad: Requires gradient (default: False).
+    :type requires_grad: bool.
     :return: The new tensor.
     :rtype: ndpp.tensor.
     """
-    return tensor._cc2py(_cc_full(scalar(fill_value), size, scalar_t, device_t))
+    return tensor._cc2py(_cc_full(scalar(fill_value), size, scalar_t, device_t, requires_grad))

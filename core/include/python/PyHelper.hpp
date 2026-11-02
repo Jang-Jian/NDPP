@@ -29,26 +29,27 @@ inline IntArray cvtSizes(const boost::python::tuple &src)
 
 
 inline PyTensor pyzeros(const boost::python::tuple &size, const ndpp_memory::ScalarType scalar_t, 
-                        const ndpp_memory::DeviceType device_t)
+                        const ndpp_memory::DeviceType device_t, const bool requires_grad)
 {
     IntArray _size = cvtSizes(size);
-    return PyTensor(std::move(zeros(_size, scalar_t, device_t)));
+    return PyTensor(std::move(zeros(_size, scalar_t, device_t, requires_grad)));
 }
 
 
 inline PyTensor pyones(const boost::python::tuple &size, const ndpp_memory::ScalarType scalar_t,
-                       const ndpp_memory::DeviceType device_t)
+                       const ndpp_memory::DeviceType device_t, const bool requires_grad)
 {
     IntArray _size = cvtSizes(size);
-    return PyTensor(std::move(ones(_size, scalar_t, device_t)));
+    return PyTensor(std::move(ones(_size, scalar_t, device_t, requires_grad)));
 }
 
 
 inline PyTensor pyfull(const PyScalar &fill_value, const boost::python::tuple &size, 
-                       const ndpp_memory::ScalarType scalar_t, const ndpp_memory::DeviceType device_t)
+                       const ndpp_memory::ScalarType scalar_t, const ndpp_memory::DeviceType device_t,
+                       const bool requires_grad)
 {
     IntArray _size = cvtSizes(size);
-    return PyTensor(std::move(full(fill_value, _size, scalar_t, device_t)));
+    return PyTensor(std::move(full(fill_value, _size, scalar_t, device_t, requires_grad)));
 }
     
 }; // namespace ndpp::ndpp_python

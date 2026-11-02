@@ -13,6 +13,7 @@ using namespace ndpp;
 #define device_t ndpp::Host
 #endif
 
+#define requires_grad false
 #define scalar_t ndpp::Float32
 
 
@@ -25,8 +26,8 @@ int main()
     ndpp::ndpp_memory::ndpp_cuda::cudaExecDevice(device_id_t, "tensor_example.cpp", "main()");
 #endif
 
-    Tensor tensor_test = ndpp::zeros({3, 4, 5}, scalar_t, device_t);
-    Tensor tensor_test2 = ndpp::zeros({4, 5}, scalar_t, device_t);
+    Tensor tensor_test = ndpp::zeros({3, 4, 5}, scalar_t, device_t, requires_grad);
+    Tensor tensor_test2 = ndpp::zeros({4, 5}, scalar_t, device_t, requires_grad);
 
     cout << "tensor_test ptr: " << tensor_test.data() << endl;
     cout << "tensor_test dim: " << tensor_test.dim() << endl;

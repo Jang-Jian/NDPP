@@ -22,12 +22,17 @@ if __name__ == "__main__":
         device_t = ndpp.host
 
     #a = np.zeros((5,6,8))
-    a = ndpp.full(5, (5,6,8), ndpp.float32, device_t)
+    a = ndpp.full(5, (5,6,8), ndpp.float32, device_t, True)
     print(a)
     b = ndpp.tensor()
     #b.from_numpy(a, ndpp.host, ndpp.host, ndpp.reference)
     b.from_tensor(a, ndpp.host, ndpp.reference)
     b_shape = b.sizes()
+
+    a_grad = a.grad()
+
+    print("a_grad_shape:", a_grad.sizes(), "a_grad_strides:", a_grad.strides())
+    print("requires_grad:", a.requires_grad())
 
 
     for i in range(b_shape[0]):

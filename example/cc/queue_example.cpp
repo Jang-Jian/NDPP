@@ -15,7 +15,7 @@ int main()
     test_queue.push(6);
     test_queue.push(std::string("abc"));
     test_queue.push(5.0f);
-    test_queue.push(ndpp::zeros({3, 4, 5}));
+    test_queue.push(ndpp::zeros({3, 4, 5}, ndpp::Float32, ndpp::Host, false));
 
     Queue test_queue2 = test_queue.clone();
     cout << "test_queue's size: " << test_queue.size() << endl;

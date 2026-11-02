@@ -38,8 +38,8 @@ TensorDevice::TensorDevice()
 
 TensorDevice::TensorDevice(TensorDevice &&src)
 {
-    DeviceMigrate((void**)&src._data, (Integer**)&src._shape, (Integer**)&src._strides, 
-                  src._dim, src._stype, src._data_dtype, src._info_dtype, src._dstatus,
+    DeviceMigrate((void**)&src._data, (void**)&src._grad, (Integer**)&src._shape, (Integer**)&src._strides, 
+                  src._dim, src._stype, src._data_dtype, src._info_dtype, src._dstatus, src._requires_grad,
                   "TensorBase.cpp", "TensorDevice::TensorDevice(TensorDevice&&");
 }
 
@@ -53,12 +53,12 @@ TensorDevice::TensorDevice(const TensorDevice &src)
     switch (src.DeviceSt())
     {
     case ndpp_memory::DeviceStatus::Allocation:
-        DeviceCopy(src._data, src._stype, src._data_dtype, src._data_dtype, 
+        DeviceCopy(src._data, src._grad, src._stype, src._data_dtype, src._data_dtype, 
                    src.DeviceShape(), src.DeviceStrides(), 
                    "TensorDevice.cpp", "TensorDevice::TensorDevice(const TensorDevice&)");
         break;
     case ndpp_memory::DeviceStatus::Reference:
-        DeviceRefer(src._data, src.DeviceShape(), src.DeviceStrides(), src._stype, src._data_dtype,
+        DeviceRefer(src._data, src._grad, src.DeviceShape(), src.DeviceStrides(), src._stype, src._data_dtype,
                     "TensorDevice.cpp", "TensorDevice::TensorDevice(const TensorDevice&)");
         break;
     }
@@ -70,7 +70,7 @@ TensorDevice::~TensorDevice()
 }
 
 void TensorDevice::DeviceAlloc(const IntArray &shape, const IntArray &strides,
-                               const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype,
+                               const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype, const bool requires_grad,
                                const string &file_name, const string &method_name)
 {
     DeviceDeAlloc(file_name, method_name);
@@ -118,28 +118,45 @@ void TensorDevice::DeviceAlloc(const IntArray &shape, const IntArray &strides,
         this->_strides = nullptr;
     }
 
-    // Alloacate '_data'.
+    // Alloacate '_data' & assign '_dstatus'(ndpp::ndpp_memory::DeviceStatus)..
+    this->_dstatus = ndpp_memory::DeviceStatus::Allocation;
     this->_data = ndpp_memory::mixScalarAlloc(_act_size, this->_stype, this->_data_dtype, 
                                               file_name, method_name);
-    if (this->_data)
+
+    if (requires_grad)
     {
-        // Assign '_dstatus'(ndpp::ndpp_memory::DeviceStatus).
-        this->_dstatus = ndpp_memory::DeviceStatus::Allocation;
+        this->_requires_grad = true;
+        this->_grad = ndpp_memory::mixScalarAlloc(_act_size, this->_stype, this->_data_dtype, 
+                                                  file_name, method_name);
     }
-    else
+
+
+    if (!this->_data || (requires_grad && !this->_grad))
     {
         DeviceDeAlloc(file_name, method_name);
-        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
-                         "Due to nullptr of this->_data allocation, it has destoryed other releated buffers (this->_shape & this->_strides).", true);
+
+        if (!this->_data)
+        {
+            ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                             "Due to nullptr of this->_data allocation, it has destoryed other releated buffers (this->_shape & this->_strides).", true);
+        }
+
+        if (requires_grad && !this->_grad)
+        {
+            ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                             "Due to nullptr of this->_grad allocation, it has destoryed other releated buffers (this->_shape & this->_strides).", true);
+        }
     }
 }
 
 void TensorDevice::DeviceReset()
 {
     this->_data = nullptr;
+    this->_grad = nullptr;
     this->_shape = nullptr;
     this->_strides = nullptr;
     this->_dim = 0;
+    this->_requires_grad = false;
 
     this->_stype = ndpp_memory::ScalarType::UInt8;
     this->_data_dtype = ndpp_memory::DeviceType::Host;
@@ -152,6 +169,7 @@ void TensorDevice::DeviceDeAlloc(const string &file_name, const string &method_n
     if (this->_dstatus == ndpp_memory::DeviceStatus::Allocation)
     {
         ndpp_memory::mixScalarDeAlloc(this->_data, this->_stype, this->_data_dtype, file_name, method_name);
+        ndpp_memory::mixScalarDeAlloc(this->_grad, this->_stype, this->_data_dtype, file_name, method_name);
         ndpp_memory::mixMemoryDeAlloc(this->_shape, this->_info_dtype, file_name, method_name);
         ndpp_memory::mixMemoryDeAlloc(this->_strides, this->_info_dtype, file_name, method_name);
     }
@@ -159,7 +177,7 @@ void TensorDevice::DeviceDeAlloc(const string &file_name, const string &method_n
     DeviceReset();
 }
 
-void TensorDevice::DeviceRefer(void *data, const IntArray &shape, const IntArray &strides, 
+void TensorDevice::DeviceRefer(void *data, void *grad, const IntArray &shape, const IntArray &strides, 
                                const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype,
                                const string &file_name, const string &method_name)
 {
@@ -168,6 +186,14 @@ void TensorDevice::DeviceRefer(void *data, const IntArray &shape, const IntArray
     {
         ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
                          "The data pointer is same as input's data (same object). It won't reference.", true);
+        return;
+    }
+
+    if (this->_grad && this->_grad == grad && 
+        this->_dstatus == ndpp_memory::DeviceStatus::Allocation)
+    {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The grad pointer is same as input's grad (same object). It won't reference.", true);
         return;
     }
 
@@ -213,10 +239,13 @@ void TensorDevice::DeviceRefer(void *data, const IntArray &shape, const IntArray
         this->_dim = shape_dim;
 
         this->_data = data;
+        this->_grad = grad; 
         this->_stype = stype; 
         this->_data_dtype = dtype;
         this->_dstatus = ndpp_memory::DeviceStatus::Reference;
         this->_info_dtype = _expect_dtype;
+
+        this->_requires_grad = (this->_grad) ? true : false;
         
 
         this->_shape = shape.data();
@@ -240,14 +269,21 @@ void TensorDevice::DeviceRefer(void *data, const IntArray &shape, const IntArray
     }
 }
 
-void TensorDevice::DeviceMigrate(void **data, Integer **shape, Integer **strides, size_t &dim,
+void TensorDevice::DeviceMigrate(void **data, void **grad, Integer **shape, Integer **strides, size_t &dim,
                                  ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, ndpp_memory::DeviceType &info_dtype, 
-                                 ndpp_memory::DeviceStatus &dstatus, const string &file_name, const string &method_name)
+                                 ndpp_memory::DeviceStatus &dstatus, bool &requires_grad, const string &file_name, const string &method_name)
 {
     if (this->_data && data[0] && this->_data == data[0])
     {
         ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
                          "The data pointer is same as input's data (same object). It won't migrate.", true);
+        return;
+    }
+    
+    if (this->_grad && grad[0] && this->_grad == grad[0])
+    {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                         "The grad pointer is same as input's grad (same object). It won't migrate.", true);
         return;
     }
     
@@ -270,23 +306,28 @@ void TensorDevice::DeviceMigrate(void **data, Integer **shape, Integer **strides
     this->_shape = shape[0];
     this->_strides = strides[0];
     this->_data = data[0];
+    this->_grad = grad[0];
     this->_dim = dim;
     this->_stype = stype;
     this->_data_dtype = data_dtype;
     this->_info_dtype = info_dtype;
     this->_dstatus = dstatus;
 
+    this->_requires_grad = (this->_grad) ? true : false;
+
     shape[0] = nullptr;
     strides[0] = nullptr;
     data[0] = nullptr;
+    grad[0] = nullptr;
     dim = 0;
+    requires_grad = false;
     stype = ndpp_memory::ScalarType::UInt8;
     data_dtype = ndpp_memory::DeviceType::Host;
     info_dtype = ndpp_memory::DeviceType::Host;
     dstatus = ndpp_memory::DeviceStatus::Allocation;
 }
 
-void TensorDevice::DeviceCopy(const void *data, const ndpp_memory::ScalarType src_stype, 
+void TensorDevice::DeviceCopy(const void *data, const void *grad, const ndpp_memory::ScalarType src_stype, 
                               const ndpp_memory::DeviceType src_dtype, 
                               const ndpp_memory::DeviceType dst_dtype, 
                               const IntArray &shape, const IntArray &strides, 
@@ -297,6 +338,14 @@ void TensorDevice::DeviceCopy(const void *data, const ndpp_memory::ScalarType sr
     {
         ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
                          "The data pointer is same as input's data (same object). It won't copy.", true);
+        return;
+    }
+
+    if (this->_grad && this->_grad == grad && 
+        this->_dstatus == ndpp_memory::DeviceStatus::Allocation)
+    {
+        ndpp_log::logger(file_name, method_name, ndpp_log::RuntimeType::Warn, 
+                        "The grad pointer is same as input's grad (same object). It won't copy.", true);
         return;
     }
 
@@ -344,6 +393,18 @@ void TensorDevice::DeviceCopy(const void *data, const ndpp_memory::ScalarType sr
                                                             file_name, method_name);
         this->_strides = ndpp_memory::mixMemoryAlloc<Integer>(this->_dim, this->_info_dtype, 
                                                               file_name, method_name);
+
+        if (grad)
+        {
+            this->_grad = ndpp_memory::mixScalarAlloc(_act_size, this->_stype, this->_data_dtype, 
+                                                      file_name, method_name);
+
+            ndpp_memory::mixScalarCopy(grad, src_dtype, 
+                                       this->_grad, this->_data_dtype, this->_stype, _act_size,
+                                       file_name, method_name);
+
+            this->_requires_grad = true;
+        }
 
         ndpp_memory::mixScalarCopy(data, src_dtype, 
                                    this->_data, this->_data_dtype, this->_stype, _act_size,

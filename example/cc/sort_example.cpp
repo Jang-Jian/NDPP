@@ -8,7 +8,7 @@ using namespace ndpp;
 
 int main()
 {
-    Tensor tensor_test = ndpp::zeros({3, 4, 5}, ndpp::Float32, ndpp::Host);
+    Tensor tensor_test = ndpp::zeros({3, 4, 5}, ndpp::Float32, ndpp::Host, false);
 
 
     for (int i = 0; i < 3; ++i)

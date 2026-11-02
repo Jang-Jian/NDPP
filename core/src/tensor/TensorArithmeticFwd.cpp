@@ -393,16 +393,17 @@ void arithmeticForward(const Tensor &a, const Tensor &b, Tensor &c,
     const ndpp_memory::DeviceType a_dtype = a.device();
     const ndpp_memory::ScalarType a_stype = a.scalar();
     const ndpp_memory::ScalarType b_stype = b.scalar();
+    const bool c_requires_grad = (a.requiresGrad() && b.requiresGrad()) ? true : false;
 
     if (!same(a.sizes(), c.sizes()) || a_dtype != c.device() || a_stype != c.scalar())
     {
         if (a_total >= b_total)
         {
-            c.zerosV(a_acutal_shape, a_strides, a_stype, a_dtype);
+            c.zerosV(a_acutal_shape, a_strides, a_stype, a_dtype, c_requires_grad);
         }
         else
         {
-            c.zerosV(b_acutal_shape, b_strides, a_stype, a_dtype);
+            c.zerosV(b_acutal_shape, b_strides, a_stype, a_dtype, c_requires_grad);
         }
     }
 
@@ -584,11 +585,12 @@ void arithmeticForward(const Tensor &a, const Scalar &b, Tensor &c,
     const ndpp_memory::DeviceType a_dtype = a.device();
     const ndpp_memory::ScalarType a_stype = a.scalar();
     const ndpp_memory::ScalarType b_stype = b.type();
+    const bool c_requires_grad = a.requiresGrad();
 
 
     if (!same(a.sizes(), c.sizes()) || a_dtype != c.device() || a_stype != c.scalar())
     {
-        c.zerosV(a_acutal_shape, a_strides, a_stype, a_dtype);
+        c.zerosV(a_acutal_shape, a_strides, a_stype, a_dtype, c_requires_grad);
     }
 
     IntArray a_allocated_shape;
@@ -651,11 +653,12 @@ void arithmeticForward(const Scalar &a, const Tensor &b, Tensor &c,
     const ndpp_memory::DeviceType b_dtype = b.device();
     const ndpp_memory::ScalarType b_stype = b.scalar();
     const ndpp_memory::ScalarType a_stype = a.type();
+    const bool c_requires_grad = b.requiresGrad();
 
 
     if (!same(b.sizes(), c.sizes()) || b_dtype != c.device() || a_stype != c.scalar())
     {
-        c.zerosV(b_acutal_shape, b_strides, a_stype, b_dtype);
+        c.zerosV(b_acutal_shape, b_strides, a_stype, b_dtype, c_requires_grad);
     }
 
     IntArray b_allocated_shape;

@@ -15,7 +15,7 @@ int main()
     test_stack.push(6);
     test_stack.push(std::string("abc"));
     test_stack.push(5.0f);
-    test_stack.push(ndpp::zeros({3, 4, 5}));
+    test_stack.push(ndpp::zeros({3, 4, 5}, ndpp::Float32, ndpp::Host, false));
 
     Stack test_stack2 = test_stack.clone();
     cout << "test_stack's size: " << test_stack.size() << endl;

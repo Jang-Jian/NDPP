@@ -104,6 +104,10 @@ public:
     // Migrates data from PyTensor.
     inline void pymigrate(PyTensor &src);
 
+    // Gets gradient from Tensor.
+    // P.S This is grad reference.
+    inline PyTensor pygrad() const;
+
     // Copy data from PyTensor.
     void pyfromtensor(const PyTensor &src,
                       const ndpp_memory::DeviceType dst_dtype,
@@ -349,6 +353,17 @@ inline PyTensor PyTensor::pyto(const ndpp_memory::ScalarType stype, const ndpp_m
 inline void PyTensor::pymigrate(PyTensor &src)
 {
     migrate(src);
+}
+
+inline PyTensor PyTensor::pygrad() const
+{
+    Tensor _dst;
+    void *_grad_ptr = grad();
+    if (_grad_ptr)
+    {
+        _dst.refer(_grad_ptr, nullptr, sizes(), strides(), scalar(), device());
+    }
+    return PyTensor(std::move(_dst));
 }
 
 

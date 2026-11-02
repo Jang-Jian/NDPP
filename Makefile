@@ -17,7 +17,11 @@ EXEAMPLES := $(addprefix $(DIR_EXES), $(patsubst %.o,%,$(notdir $(EXEAMPLE_OBJS)
 NDPP_IN_PATH := $(shell whereis $(INSTALLED_CC_LIBS))
 #SHELL := /bin/bash
 define CHECK_LIB_EXISTS
-$(if $(wildcard $(1)),1,$(info [NDPP] $(1) doesn't exist. Please build this library or check your building-command first.)0)
+$(if $(wildcard $(1)),1,0)
+endef
+
+define SHOW_LIB_STATUS
+$(if $(wildcard $(1)),,$(info [NDPP] $(2) doesn't exist. Please build this library or check your building-command first.))
 endef
 
 CC_STATIC_EXIST:=$(call CHECK_LIB_EXISTS,$(CC_STATIC))
@@ -37,7 +41,7 @@ obj:
 	mkdir -p $(DIR_CC_LIBS)
 	mkdir -p $(DIR_EXES)
 
-install: #CC_SHARED_EXIST:=$(call CHECK_LIB_EXISTS,$(CC_SHARED))
+install:
 ifeq ($(CC_STATIC_EXIST)$(CC_SHARED_EXIST),11)
 	mkdir -p $(INSTALLED_CC_LIBS)
 	cp -r core/include $(INSTALLED_CC_LIBS)
@@ -46,11 +50,18 @@ ifeq ($(NDPP_IN_PATH), ndpp:) # If there is no ndpp's global path (saved in /etc
 	echo 'export PATH=$(PATH):$(INSTALLED_CC_LIBS)' | tee -a /etc/profile
 	source /etc/profile
 endif
+else
+	$(call SHOW_LIB_STATUS,$(CC_STATIC_EXIST),$(CC_STATIC))
+	$(call SHOW_LIB_STATUS,$(CC_SHARED_EXIST),$(CC_SHARED))
 endif
 
 ifeq ($(WITH_PYTHON), 1)
 ifeq ($(CC_PY_STATIC_EXIST)$(CC_PY_SHARED_EXIST)$(PY_SHARED_EXIST),111)
 	cp -r $(DIR_PY_LIBS) /usr/local/lib/python$(PY3_VER)/dist-packages
+else
+	$(call SHOW_LIB_STATUS,$(CC_PY_STATIC_EXIST),$(CC_PY_STATIC))
+	$(call SHOW_LIB_STATUS,$(CC_PY_SHARED_EXIST),$(CC_PY_SHARED))
+	$(call SHOW_LIB_STATUS,$(PY_SHARED_EXIST),$(PY_SHARED))
 endif
 endif
 

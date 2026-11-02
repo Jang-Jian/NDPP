@@ -79,20 +79,21 @@ void PyTensor::pyfromtensor(const PyTensor &src,
 
     const ndpp_memory::ScalarType _src_stype = src.scalar();
     const ndpp_memory::DeviceType _src_dtype = src.device();
-    void* _raw_ptr = src.data();
+    void* _data_ptr = src.data();
+    void* _grad_ptr = src.grad();
 
     switch (copy_status)
     {
     case ndpp_memory::DeviceStatus::Allocation:
         {
-            Tensor::copy(_raw_ptr, _src_shape, _src_stride, 
+            Tensor::copy(_data_ptr, _grad_ptr, _src_shape, _src_stride, 
                          _src_stype, _src_dtype, dst_dtype);
         }
         break;
     
     case ndpp_memory::DeviceStatus::Reference:
         {
-            Tensor::refer(_raw_ptr, _src_shape, _src_stride, 
+            Tensor::refer(_data_ptr, _grad_ptr, _src_shape, _src_stride, 
                           _src_stype, _src_dtype);
         }
         break;
@@ -110,20 +111,20 @@ void PyTensor::pyfromnumpy(const numpy::ndarray &src,
     const IntArray _src_shape = getNumpyShape(src);
     const IntArray _src_stride = getNumpyStrides(src);
 
-    void* _raw_ptr = static_cast<void*>(src.get_data());
+    void* _data_ptr = static_cast<void*>(src.get_data());
     
     switch (copy_status)
     {
     case ndpp_memory::DeviceStatus::Allocation:
         {
-            Tensor::copy(_raw_ptr, _src_shape, _src_stride, 
+            Tensor::copy(_data_ptr, nullptr, _src_shape, _src_stride, 
                          _src_stype, src_dtype, dst_dtype);
         }
         break;
     
     case ndpp_memory::DeviceStatus::Reference:
         {
-            Tensor::refer(_raw_ptr, _src_shape, _src_stride, 
+            Tensor::refer(_data_ptr, nullptr, _src_shape, _src_stride, 
                           _src_stype, src_dtype);
         }
         break;

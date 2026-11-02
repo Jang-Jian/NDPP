@@ -41,30 +41,32 @@ public:
 
 protected:
     void DeviceAlloc(const IntArray &shape, const IntArray &strides,
-                     const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype,
+                     const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype, const bool requires_grad,
                      const string &file_name, const string &method_name);
 
     void DeviceReset();
 
     void DeviceDeAlloc(const string &file_name, const string &method_name);
 
-    void DeviceRefer(void *data, const IntArray &shape, const IntArray &strides, 
+    void DeviceRefer(void *data, void *grad, const IntArray &shape, const IntArray &strides, 
                      const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype,
                      const string &file_name, const string &method_name);
 
     inline void DeviceMigrate(TensorDevice &src, const string &file_name, const string &method_name);
 
-    void DeviceMigrate(void **data, Integer **shape, Integer **strides, size_t &dim,
+    void DeviceMigrate(void **data, void **grad, Integer **shape, Integer **strides, size_t &dim,
                        ndpp_memory::ScalarType &stype, ndpp_memory::DeviceType &data_dtype, ndpp_memory::DeviceType &info_dtype, 
-                       ndpp_memory::DeviceStatus &dstatus, const string &file_name, const string &method_name);
+                       ndpp_memory::DeviceStatus &dstatus, bool &requires_grad, const string &file_name, const string &method_name);
 
-    void DeviceCopy(const void *data, const ndpp_memory::ScalarType src_stype, 
+    void DeviceCopy(const void *data, const void *grad, const ndpp_memory::ScalarType src_stype, 
                     const ndpp_memory::DeviceType src_dtype, 
                     const ndpp_memory::DeviceType dst_dtype, 
                     const IntArray &shape, const IntArray &strides, 
                     const string &file_name, const string &method_name);
 
-    inline void* DevicePtr() const;
+    inline void* DeviceDataPtr() const;
+    inline void* DeviceGradPtr() const;
+    inline bool RequiresGrad() const;
     inline size_t DeviceDim() const;
     inline IntArray DeviceShape() const;
     inline IntArray DeviceStrides() const;
@@ -74,9 +76,11 @@ protected:
 
 private:
     void *_data = nullptr;
+    void *_grad = nullptr;
     Integer *_shape = nullptr;
     Integer *_strides = nullptr;
     size_t _dim = 0;
+    bool _requires_grad = false;
 
     ndpp_memory::ScalarType _stype = ndpp_memory::ScalarType::UInt8;
     ndpp_memory::DeviceType _data_dtype = ndpp_memory::DeviceType::Host;
@@ -86,13 +90,23 @@ private:
 
 inline void TensorDevice::DeviceMigrate(TensorDevice &src, const string &file_name, const string &method_name)
 {
-    DeviceMigrate((void**)&src._data, (Integer**)&src._shape, (Integer**)&src._strides, src._dim,
-                  src._stype, src._data_dtype, src._info_dtype, src._dstatus, file_name, method_name);
+    DeviceMigrate((void**)&src._data, (void**)&src._grad, (Integer**)&src._shape, (Integer**)&src._strides, src._dim,
+                  src._stype, src._data_dtype, src._info_dtype, src._dstatus, src._requires_grad, file_name, method_name);
 }
 
-inline void* TensorDevice::DevicePtr() const
+inline void* TensorDevice::DeviceDataPtr() const
 {
     return this->_data;
+}
+
+inline void* TensorDevice::DeviceGradPtr() const
+{
+    return this->_grad;
+}
+
+inline bool TensorDevice::RequiresGrad() const
+{
+    return this->_requires_grad;
 }
 
 inline size_t TensorDevice::DeviceDim() const

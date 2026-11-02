@@ -81,10 +81,11 @@ Tensor Tensor::select(int64_t row_index) const
 
     // get the start address of pointer with row_index, using 2-dimension access.
     void *_return_data = ndpp_memory::scalarPtrShift(data(), data_stype, (row_index * actual_col_size));
+    void *_return_grad = ndpp_memory::scalarPtrShift(grad(), data_stype, (row_index * actual_col_size));
     //ndpp::ndpp_memory::DeviceStatus dstatus = ndpp::ndpp_memory::DeviceStatus::Reference;
 
     Tensor dst;
-    dst.refer(_return_data, _return_shape, _return_strides, data_stype, data_dtype);
+    dst.refer(_return_data, _return_grad, _return_shape, _return_strides, data_stype, data_dtype);
     //dst.migrate((void**)&_return_data, _return_shape, _return_strides,
     //            data_stype, data_dtype, dstatus);
 
@@ -94,10 +95,11 @@ Tensor Tensor::select(int64_t row_index) const
 Tensor Tensor::to(const ndpp_memory::ScalarType stype, const ndpp_memory::DeviceType dtype) const
 {
     Tensor _dst;
-    _dst.zerosV(sizes(), strides(), stype, dtype);
+    _dst.zerosV(sizes(), strides(), stype, dtype, requiresGrad());
 
     bool _is_src_buffered = false;
-    void *_src_raw_ptr = nullptr;
+    void *_src_data_ptr = nullptr;
+    void *_src_grad_ptr = nullptr;
 
     switch (device())
     {
@@ -115,19 +117,26 @@ Tensor Tensor::to(const ndpp_memory::ScalarType stype, const ndpp_memory::Device
                 case ndpp_memory::DeviceType::CudaZeroCpy:
             #endif
                     {
-                        _src_raw_ptr = data();
+                        _src_data_ptr = data();
+                        _src_grad_ptr = grad();
                     }
                     break;
 
             #ifdef CUDA
                 case ndpp_memory::DeviceType::CudaDevice:
                     {
-                        _src_raw_ptr = ndpp_memory::mixScalarAlloc(allocations(), scalar(), dtype, 
+                        _src_data_ptr = ndpp_memory::mixScalarAlloc(allocations(), scalar(), dtype, 
+                                                                   "Tensor.cpp", "Tensor::to");
+                        _src_grad_ptr = ndpp_memory::mixScalarAlloc(allocations(), scalar(), dtype, 
                                                                    "Tensor.cpp", "Tensor::to");
 
                         ndpp_memory::mixScalarCopy(data(), device(),
-                                                   _src_raw_ptr, dtype, scalar(), allocations(),
-                                                   "Tensor.cpp", "Tensor::to");                  
+                                                   _src_data_ptr, dtype, scalar(), allocations(),
+                                                   "Tensor.cpp", "Tensor::to");
+                        ndpp_memory::mixScalarCopy(grad(), device(),
+                                                   _src_grad_ptr, dtype, scalar(), allocations(),
+                                                   "Tensor.cpp", "Tensor::to");         
+                                                   
                         _is_src_buffered = true;
                     }
                     break;
@@ -144,19 +153,27 @@ Tensor Tensor::to(const ndpp_memory::ScalarType stype, const ndpp_memory::Device
                 case ndpp_memory::DeviceType::CudaUnified:
                 case ndpp_memory::DeviceType::CudaZeroCpy:
                     {
-                        _src_raw_ptr = ndpp_memory::mixScalarAlloc(allocations(), scalar(), dtype, 
+                        _src_data_ptr = ndpp_memory::mixScalarAlloc(allocations(), scalar(), dtype, 
+                                                                   "Tensor.cpp", "Tensor::to");
+                        _src_grad_ptr = ndpp_memory::mixScalarAlloc(allocations(), scalar(), dtype, 
                                                                    "Tensor.cpp", "Tensor::to");
 
                         ndpp_memory::mixScalarCopy(data(), device(),
-                                                   _src_raw_ptr, dtype, scalar(), allocations(),
-                                                   "Tensor.cpp", "Tensor::to");                    
+                                                   _src_data_ptr, dtype, scalar(), allocations(),
+                                                   "Tensor.cpp", "Tensor::to");    
+                        ndpp_memory::mixScalarCopy(grad(), device(),
+                                                   _src_grad_ptr, dtype, scalar(), allocations(),
+                                                   "Tensor.cpp", "Tensor::to");                           
+                                                   
+
                         _is_src_buffered = true;                           
                     }
                     break;
 
                 case ndpp_memory::DeviceType::CudaDevice:
                     {
-                        _src_raw_ptr = data();
+                        _src_data_ptr = data();
+                        _src_grad_ptr = grad();
                     }
                     break;
             }
@@ -170,18 +187,25 @@ Tensor Tensor::to(const ndpp_memory::ScalarType stype, const ndpp_memory::Device
                 case ndpp_memory::DeviceType::CudaUnified:
                 case ndpp_memory::DeviceType::CudaZeroCpy:
                     {
-                        _src_raw_ptr = data();
+                        _src_data_ptr = data();
+                        _src_grad_ptr = grad();
                     }
                     break;
 
                 case ndpp_memory::DeviceType::CudaDevice:
                     {
-                        _src_raw_ptr = ndpp_memory::mixScalarAlloc(allocations(), scalar(), dtype, 
+                        _src_data_ptr = ndpp_memory::mixScalarAlloc(allocations(), scalar(), dtype, 
+                                                                   "Tensor.cpp", "Tensor::to");
+                        _src_grad_ptr = ndpp_memory::mixScalarAlloc(allocations(), scalar(), dtype, 
                                                                    "Tensor.cpp", "Tensor::to");
 
                         ndpp_memory::mixScalarCopy(data(), device(),
-                                                   _src_raw_ptr, dtype, scalar(), allocations(),
-                                                   "Tensor.cpp", "Tensor::to");   
+                                                   _src_data_ptr, dtype, scalar(), allocations(),
+                                                   "Tensor.cpp", "Tensor::to");  
+                        ndpp_memory::mixScalarCopy(grad(), device(),
+                                                   _src_grad_ptr, dtype, scalar(), allocations(),
+                                                   "Tensor.cpp", "Tensor::to");                            
+                                                   
                         _is_src_buffered = true;
                     }
                     break;
@@ -190,12 +214,15 @@ Tensor Tensor::to(const ndpp_memory::ScalarType stype, const ndpp_memory::Device
     #endif
     }
 
-    cvtScalarType(_src_raw_ptr, scalar(), 
+    cvtScalarType(_src_data_ptr, scalar(), 
                   _dst.data(), stype, dtype, allocations());
+    cvtScalarType(_src_grad_ptr, scalar(), 
+                  _dst.grad(), stype, dtype, allocations());
 
     if (_is_src_buffered)
     {
-        ndpp_memory::mixScalarDeAlloc(_src_raw_ptr, scalar(), dtype, "Tensor.cpp", "Tensor::to");
+        ndpp_memory::mixScalarDeAlloc(_src_data_ptr, scalar(), dtype, "Tensor.cpp", "Tensor::to(data)");
+        ndpp_memory::mixScalarDeAlloc(_src_grad_ptr, scalar(), dtype, "Tensor.cpp", "Tensor::to(grad)");
     }
 
     return _dst;

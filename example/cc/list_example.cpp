@@ -11,7 +11,7 @@ void push(List &test)
     test.pushFront(6);
     test.pushBack(std::string("abc"));
     test.pushFront(5.0f);
-    test.pushFront(ndpp::zeros({3, 4, 5}));
+    test.pushFront(ndpp::zeros({3, 4, 5}, ndpp::Float32, ndpp::Host, false));
 }
 
 int main()
